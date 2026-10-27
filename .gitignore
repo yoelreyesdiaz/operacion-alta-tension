@@ -1,0 +1,18 @@
+# Caché de Godot (se regenera al abrir el proyecto)
+.godot/
+**/.godot/
+*.translation
+
+# Compilados: se publican como "Releases" en GitHub, no en el código
+*.app/
+ejecutables/
+*.exe
+*.pck
+*.zip
+
+# Capturas temporales
+avances/_tmp/
+
+# Sistema
+.DS_Store
+Thumbs.db

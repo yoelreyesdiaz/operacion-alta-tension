@@ -1,0 +1,40 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+
+config/name="Operación Alta Tensión"
+config/description="Capítulo 1 completo: intro, llegada, caseta, tablero TSA-01 y portón"
+run/main_scene="res://scenes/ui/main_menu.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+GameState="*res://autoload/game_state.gd"
+AudioManager="*res://autoload/audio_manager.gd"
+Inventory="*res://autoload/inventory.gd"
+PowerGrid="*res://autoload/power_grid.gd"
+Quest="*res://autoload/quest.gd"
+Radio="*res://autoload/radio.gd"
+SaveSystem="*res://autoload/save_system.gd"
+Transition="*res://autoload/transition.gd"
+Narrator="*res://autoload/narrator.gd"
+
+[display]
+
+window/size/viewport_width=426
+window/size/viewport_height=240
+window/size/window_width_override=1278
+window/size/window_height_override=720
+window/stretch/mode="viewport"
+window/stretch/scale_mode="integer"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.043, 0.051, 0.071, 1)
+2d/snap/snap_2d_transforms_to_pixel=true

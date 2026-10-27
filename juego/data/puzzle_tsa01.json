@@ -1,0 +1,9 @@
+{
+  "tamano": 7,
+  "semilla": 2210,
+  "entrada": [0, 0],
+  "salida": [6, 6],
+  "tiempo": 45,
+  "camino_minimo": 19,
+  "nodos": 7
+}

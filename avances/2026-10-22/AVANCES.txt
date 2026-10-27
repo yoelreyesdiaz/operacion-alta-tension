@@ -1,0 +1,132 @@
+OPERACIÓN ALTA TENSIÓN — TABLERO DE NODOS TSA-01 · CAPTURAS DE AVANCE · 22-OCT-2026
+==================================================================
+
+Todas son capturas reales: fotogramas del juego tal como se ven en la ventana (1278x720)
+y capturas del editor de Godot con el código abierto.
+
+Rediseño del tablero de nodos TSA-01 (3 iteraciones + versión final):
+  medir fusible → cambiarlo → energizar (timer de 45 s) → girar 7 nodos con ESPACIO
+  para llevar la energía del banco al portón por un cable con tramos rectos y curvas.
+
+Tipos: ANTES · REDISEÑO · FUNCIONALIDAD · CÓDIGO
+
+01_antes_tablero_original.png
+  [ANTES] Tablero original
+  Puzzle anterior: rejilla completa de 7x7 nodos cuadrados con interruptor y verificación.
+
+02_antes_tablero_resuelto.png
+  [ANTES] Tablero original resuelto
+  Había que conectar TODOS los nodos de la red.
+
+03_iteracion1_paso1.png
+  [REDISEÑO · iteración 1] Nueva lógica, estilo anterior
+  Primer rediseño: pasos medir → cambiar → energizar con timer; banco al centro y meta a la derecha.
+
+04_iteracion1_energizado.png
+  [REDISEÑO · iteración 1] Iteración 1 energizada
+  Arranca el temporizador y se giran los nodos.
+
+05_iteracion1_meta.png
+  [REDISEÑO · iteración 1] Iteración 1 resuelta
+  La energía llega a la meta del portón.
+
+06_iteracion2_paso1.png
+  [REDISEÑO · iteración 2] Estilo de la referencia
+  Nodos redondos tipo PVC, banco arriba a la izquierda y portón abajo a la derecha.
+
+07_iteracion2_energizado.png
+  [REDISEÑO · iteración 2] 49 nodos: se satura
+  Con la rejilla llena de nodos era fácil perderse.
+
+08_iteracion3_energizado.png
+  [REDISEÑO · iteración 3] Sólo el recorrido
+  Se quitaron los nodos de relleno, pero seguía habiendo un nodo en cada casilla.
+
+09_iteracion3_meta.png
+  [REDISEÑO · iteración 3] Iteración 3 resuelta
+  Recorrido completo con piezas fijas cuadradas.
+
+10_final_paso1_medir.png
+  [REDISEÑO · final] Versión final: paso 1
+  Cable fijo con tramos rectos y curvas, y sólo 7 nodos giratorios. Primero se mide el fusible.
+
+11_final_paso2_fusible.png
+  [FUNCIONALIDAD] Paso 2: fusible abierto
+  El multímetro marca ∞ Ω; se habilita cambiar el fusible.
+
+12_final_paso3_energizado.png
+  [FUNCIONALIDAD] Paso 3: energizado
+  Corre el tiempo. Todos los nodos empiezan girados (en rojo): la energía no pasa.
+
+13_final_disparo.png
+  [FUNCIONALIDAD] Se acabó el tiempo
+  Disparo de protección: se funde el fusible y baja un intento.
+
+14_final_nodo_1_alineado.png
+  [FUNCIONALIDAD] Nodo 1 de 7 alineado
+  Se giró el nodo 1 con ESPACIO; la energía avanza un tramo más por el cable.
+
+15_final_nodo_2_alineado.png
+  [FUNCIONALIDAD] Nodo 2 de 7 alineado
+  Se giró el nodo 2 con ESPACIO; la energía avanza un tramo más por el cable.
+
+16_final_nodo_3_alineado.png
+  [FUNCIONALIDAD] Nodo 3 de 7 alineado
+  Se giró el nodo 3 con ESPACIO; la energía avanza un tramo más por el cable.
+
+17_final_nodo_4_alineado.png
+  [FUNCIONALIDAD] Nodo 4 de 7 alineado
+  Se giró el nodo 4 con ESPACIO; la energía avanza un tramo más por el cable.
+
+18_final_nodo_5_alineado.png
+  [FUNCIONALIDAD] Nodo 5 de 7 alineado
+  Se giró el nodo 5 con ESPACIO; la energía avanza un tramo más por el cable.
+
+19_final_nodo_6_alineado.png
+  [FUNCIONALIDAD] Nodo 6 de 7 alineado
+  Se giró el nodo 6 con ESPACIO; la energía avanza un tramo más por el cable.
+
+20_final_nodo_7_alineado.png
+  [FUNCIONALIDAD] Nodo 7 de 7 alineado
+  Se giró el nodo 7 con ESPACIO; la energía avanza un tramo más por el cable.
+
+21_final_circuito_completo.png
+  [FUNCIONALIDAD] Circuito completo
+  La energía llega al portón: ABIERTO y avance 100%.
+
+22_codigo_modelo_reglas.png
+  [CÓDIGO] Modelo del tablero
+  Editor de Godot: CircuitoModel con pasos, estados y resultados.
+
+23_codigo_recorrido.png
+  [CÓDIGO] Generación del recorrido
+  Editor de Godot: camino del banco al portón con semilla fija.
+
+24_codigo_nodos_girados.png
+  [CÓDIGO] Nodos que empiezan girados
+  Editor de Godot: el camino es cable fijo y los 7 nodos se giran para cortar la energía.
+
+25_codigo_pasos.png
+  [CÓDIGO] Medir, cambiar y energizar
+  Editor de Godot: reglas de cada paso antes de poder girar.
+
+26_codigo_timer.png
+  [CÓDIGO] Temporizador y disparo
+  Editor de Godot: se resuelve al llegar a la meta o dispara al acabarse el tiempo.
+
+27_codigo_controles.png
+  [CÓDIGO] Controles del tablero
+  Editor de Godot: ESPACIO gira, 2 mide, F cambia fusible, 1 energiza.
+
+28_codigo_cursor.png
+  [CÓDIGO] Cursor de nodo en nodo
+  Editor de Godot: WASD salta al nodo más cercano.
+
+29_codigo_cable_curvas.png
+  [CÓDIGO] Cable con curvas
+  Editor de Godot: tramos rectos y curvas en arco con pulsos de energía.
+
+30_codigo_nodo_pvc.png
+  [CÓDIGO] Nodo redondo tipo PVC
+  Editor de Godot: carcasa redonda, LED rojo/azul y pieza de tubo.
+

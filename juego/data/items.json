@@ -1,0 +1,51 @@
+{
+  "lampara": {
+    "nombre": "Lámpara de casco",
+    "categoria": "herramientas",
+    "icono": 4,
+    "equipable": false,
+    "desc": "Ilumina alrededor de Leo. Siempre encendida."
+  },
+  "radio": {
+    "nombre": "Radio portátil",
+    "categoria": "herramientas",
+    "icono": 5,
+    "equipable": false,
+    "desc": "Canal 4. Enlace con Ing. Morales en el Centro de Control."
+  },
+  "multimetro": {
+    "nombre": "Multímetro",
+    "categoria": "herramientas",
+    "icono": 0,
+    "equipable": true,
+    "desc": "Mide tensión y continuidad. Sin él no puedes verificar que un equipo esté muerto."
+  },
+  "destornillador": {
+    "nombre": "Destornillador",
+    "categoria": "herramientas",
+    "icono": 1,
+    "equipable": true,
+    "desc": "Abre tapas y cubiertas de tableros."
+  },
+  "fusible": {
+    "nombre": "Fusible 10 A",
+    "categoria": "componentes",
+    "icono": 2,
+    "equipable": false,
+    "desc": "Cartucho de repuesto para nodos de distribución."
+  },
+  "bitacora": {
+    "nombre": "Bitácora del vigilante",
+    "categoria": "documentos",
+    "icono": 3,
+    "equipable": false,
+    "desc": "21:10 — Ronda sin novedad.\n21:40 — Llega unidad sin rótulos. Traen orden de trabajo para la ZONA RESTRINGIDA. No aparece en mi lista. Llamo a confirmar.\n21:52 — Nadie contesta en Control. Les abro.\n22:15 — Se fue la luz. La unidad ya no está.\n\n— J. Orozco"
+  },
+  "diagrama": {
+    "nombre": "Diagrama TSA-01",
+    "categoria": "documentos",
+    "icono": 3,
+    "equipable": false,
+    "desc": "TABLERO TSA-01 — PROCEDIMIENTO\n1. MIDE el fusible principal del banco con el multímetro.\n2. Si está abierto, CÁMBIALO por uno de 10 A.\n3. ENERGIZA: la protección aguanta poco tiempo con la red abierta.\n4. GIRA los nodos y lleva la energía del banco hasta la salida del PORTÓN.\nSi se acaba el tiempo, el fusible se vuelve a fundir."
+  }
+}

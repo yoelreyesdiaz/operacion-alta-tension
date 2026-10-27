@@ -1,0 +1,140 @@
+{
+  "llegada": [
+    [
+      "Ing. Morales",
+      "Leo, ya te tengo en el rastreo. ¿Llegaste?"
+    ],
+    [
+      "Leo",
+      "Estoy en la entrada, inge. Todo a oscuras... y no veo a Don Chuy en la caseta."
+    ],
+    [
+      "Ing. Morales",
+      "Su radio no contesta; seguro anda en una ronda. Primero lo primero."
+    ],
+    [
+      "Ing. Morales",
+      "Saca tu herramienta de la camioneta antes de tocar nada. Y con cuidado: esta tormenta no ayuda."
+    ]
+  ],
+  "herramientas": [
+    [
+      "Leo",
+      "Multímetro y destornillador. Con esto empezamos."
+    ],
+    [
+      "Ing. Morales",
+      "Perfecto. Ahora sí, a devolverle la luz a Guadalajara."
+    ]
+  ],
+  "porton_sin_energia": [
+    [
+      "Leo",
+      "El portón es eléctrico y está muerto. Ni la chapa responde."
+    ],
+    [
+      "Ing. Morales",
+      "Lo alimenta el tablero de servicios auxiliares, el TSA-01. Está en el recinto del lado este."
+    ]
+  ],
+  "trafo": [
+    [
+      "Leo",
+      "Transformador de servicios propios. Tibio, sin zumbido... tiene tensión de entrada pero no entrega nada."
+    ],
+    [
+      "Ing. Morales",
+      "Entonces el problema está aguas abajo. Revisa el TSA-01."
+    ]
+  ],
+  "tsa_sin_herramienta": [
+    [
+      "Leo",
+      "La tapa está atornillada. Necesito el destornillador en la mano."
+    ]
+  ],
+  "cable": [
+    [
+      "Ing. Morales",
+      "¡Leo! ¿Estás bien? Ese cable sigue vivo por el banco de emergencia. Pasa cuando deje de chispear."
+    ]
+  ],
+  "gabinete": [
+    [
+      "Leo",
+      "Gabinete de refacciones. Fusibles de 10 amperes, justo lo que necesito."
+    ]
+  ],
+  "desmayo": [
+    [
+      "Ing. Morales",
+      "¡Leo! ¡Leo, contesta!"
+    ],
+    [
+      "Leo",
+      "Aquí... aquí sigo. Me sacudió feo. Vuelvo a empezar desde la camioneta."
+    ]
+  ],
+  "tsa_primera": [
+    [
+      "Leo",
+      "Inge, ya abrí el TSA-01. El banco de emergencia tiene tensión, pero la red no entrega nada."
+    ],
+    [
+      "Ing. Morales",
+      "Empieza por el fusible principal del banco. Mídelo con el multímetro antes de tocarlo."
+    ],
+    [
+      "Ing. Morales",
+      "Si está abierto, en la caseta hay repuestos. Y ojo: al energizar, la protección aguanta poco."
+    ]
+  ],
+  "fusible_abierto": [
+    [
+      "Leo",
+      "Infinito. El fusible principal está abierto."
+    ],
+    [
+      "Ing. Morales",
+      "Cámbialo. Luego energizas y llevas la energía nodo por nodo hasta el portón."
+    ]
+  ],
+  "disparo": [
+    [
+      "Ing. Morales",
+      "¡Se botó la protección! Ese fusible ya no sirve."
+    ],
+    [
+      "Ing. Morales",
+      "Pon otro y vuelve a energizar. Los nodos se quedan como los dejaste."
+    ]
+  ],
+  "energia": [
+    [
+      "Ing. Morales",
+      "¡Eso! Me acaba de entrar señal del circuito A. Servicios auxiliares arriba."
+    ],
+    [
+      "Leo",
+      "Ya hay luz en la entrada. El portón tiene tensión."
+    ],
+    [
+      "Ing. Morales",
+      "Entra al patio. Lo que sigue va a estar peor."
+    ]
+  ],
+  "final": [
+    [
+      "Leo",
+      "Inge, antes de entrar... esos nodos no se giraron solos. Alguien estuvo aquí."
+    ],
+    [
+      "Ing. Morales",
+      "..."
+    ],
+    [
+      "Ing. Morales",
+      "Busca a Don Chuy. Y no lo comentes por este canal."
+    ]
+  ]
+}

@@ -1,0 +1,56 @@
+[
+  {"id": "negro", "duracion": 7.0, "entrada": "fade", "eventos": [
+    {"t": 0.0, "loop": "lluvia", "vol": -10.0},
+    {"t": 0.8, "narra": "Guadalajara. Temporada de lluvias.", "hold": 1.8},
+    {"t": 3.4, "hora": "22:14", "hold": 3.4},
+    {"t": 3.8, "narra": "La tormenta lleva tres horas sobre el valle.", "hold": 1.2}
+  ]},
+  {"id": "ciudad", "duracion": 11.0, "entrada": "fade", "eventos": [
+    {"t": 0.3, "loop": "musica_tension", "vol": -18.0, "bus": "Musica"},
+    {"t": 1.0, "narra": "Un millón de luces que nadie mira...", "hold": 2.0},
+    {"t": 4.6, "accion": "rayo"},
+    {"t": 5.3, "sfx": "trueno", "vol": -4.0},
+    {"t": 6.4, "narra": "...hasta que se apagan.", "hold": 2.6}
+  ]},
+  {"id": "subestacion", "duracion": 10.0, "entrada": "corte", "eventos": [
+    {"t": 0.2, "hora": "S.E. ATEMAJAC · 22:15", "hold": 5.0},
+    {"t": 2.4, "accion": "rayo"},
+    {"t": 2.5, "sfx": "trueno", "vol": 0.0},
+    {"t": 2.7, "accion": "arco"},
+    {"t": 2.7, "sfx": "chispa", "vol": 0.0},
+    {"t": 3.5, "accion": "apagon"},
+    {"t": 3.5, "sfx": "apagon", "vol": 0.0},
+    {"t": 3.6, "fade_loop": "musica_tension", "vol": -32.0, "tiempo": 0.8},
+    {"t": 6.2, "narra": "En un segundo, media ciudad se queda a oscuras.", "hold": 2.0}
+  ]},
+  {"id": "control", "duracion": 13.0, "entrada": "fade", "eventos": [
+    {"t": 0.0, "fade_loop": "musica_tension", "vol": -20.0, "tiempo": 2.0},
+    {"t": 0.3, "sfx": "alarma", "vol": -8.0},
+    {"t": 0.5, "hora": "CENTRO DE CONTROL · 22:16", "hold": 3.5},
+    {"t": 1.6, "radio": ["Ing. Morales", "Control a Atemajac. Atemajac, ¿me copia?"], "hold": 1.4},
+    {"t": 3.2, "sfx": "alarma", "vol": -8.0},
+    {"t": 5.0, "radio": ["Ing. Morales", "Don Chuy, ¿me copia? ...Seguro se le acabó la batería al radio."], "hold": 1.4},
+    {"t": 8.1, "narra": "Para esto se necesita a alguien que conozca Atemajac de memoria.", "hold": 1.2},
+    {"t": 10.4, "radio": ["Ing. Morales", "Llamen a Leo Ramírez. Él conoce esa subestación como nadie."], "hold": 0.8}
+  ]},
+  {"id": "cabina", "duracion": 12.0, "entrada": "fade", "eventos": [
+    {"t": 0.0, "loop": "motor", "vol": -14.0},
+    {"t": 0.4, "hora": "22:31 · CARRETERA A ATEMAJAC", "hold": 3.5},
+    {"t": 1.4, "radio": ["Ing. Morales", "Leo, ¿me copias?"], "hold": 1.0, "arriba": true},
+    {"t": 3.6, "radio": ["Leo", "Fuerte y claro, inge. Voy llegando."], "hold": 1.2, "arriba": true},
+    {"t": 6.8, "radio": ["Ing. Morales", "Media Guadalajara a oscuras. Y con esta lluvia... con cuidado, Leo."], "hold": 1.4, "arriba": true}
+  ]},
+  {"id": "carretera", "duracion": 9.0, "entrada": "corte", "eventos": [
+    {"t": 1.6, "accion": "van"},
+    {"t": 4.6, "radio": ["Leo", "...¿Y esa camioneta? Sin rótulos y con las luces apagadas. Qué raro."], "hold": 1.6, "arriba": true},
+    {"t": 7.4, "fade_loop": "motor", "vol": -40.0, "tiempo": 1.5}
+  ]},
+  {"id": "porton", "duracion": 11.0, "entrada": "fade", "eventos": [
+    {"t": 0.6, "hora": "22:41 · S.E. ATEMAJAC", "hold": 2.6},
+    {"t": 2.2, "accion": "titulo"},
+    {"t": 2.2, "sfx": "chispa", "vol": -2.0},
+    {"t": 2.3, "fade_loop": "musica_tension", "vol": -12.0, "tiempo": 2.0},
+    {"t": 3.6, "capitulo": ["CAPÍTULO 1", "Llegada"]},
+    {"t": 6.2, "narra": "Hay noches en que una ciudad entera depende de alguien que sabe lo que hace.", "hold": 1.6}
+  ]}
+]
