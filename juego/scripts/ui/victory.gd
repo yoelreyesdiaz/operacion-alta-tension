@@ -17,7 +17,7 @@ func _ready() -> void:
 	UIKit.text(vb, "Tiempo: %02d:%02d\nDisparos de protección: %d\nDescargas recibidas: %d"
 		% [secs / 60, secs % 60, s["disparos"], s["descargas"]])
 	UIKit.text(vb, "Los nodos no se movieron solos. Alguien estuvo aquí antes que tú.", GameState.C_ORANGE)
-	UIKit.text(vb, "Continuará — Capítulo 2: Restablecer sistemas básicos", GameState.C_DIM)
-	UIKit.button(vb, "Menú principal", func() -> void: GameState.goto(GameState.MENU)).grab_focus()
+	UIKit.button(vb, "Continuar: Capítulo 2", func() -> void: GameState.goto(GameState.CAP2)).grab_focus()
+	UIKit.button(vb, "Menú principal", func() -> void: GameState.goto(GameState.MENU))
 	UIKit.button(vb, "Salir", get_tree().quit)
 	AudioManager.play("exito")

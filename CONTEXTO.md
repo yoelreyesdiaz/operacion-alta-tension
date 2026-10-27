@@ -14,7 +14,8 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
   caseta (fusibles, bitácora, diagrama) → cable caído que da toques → tablero TSA-01 → portón → fin.
 - **Tablero TSA-01 (puzzle):** medir el fusible con el multímetro → cambiarlo → energizar
   (45 s) → girar 7 nodos con ESPACIO para llevar la energía por el cable hasta el portón.
-- Siguiente: Capítulo 2 (patio de interruptores y generador auxiliar).
+- **Capítulo 2 — El impacto del rayo:** cinemática de apertura lista (`data/cinematica_cap2.json`).
+  Siguiente: la parte jugable del Capítulo 2.
 
 ## Estructura del repositorio
 | Carpeta | Contenido |

@@ -3,6 +3,18 @@
 > Agrega tu entrada **arriba** (lo más reciente primero). Formato:
 > `## AAAA-MM-DD · Nombre` y luego viñetas: qué hiciste, qué falta, problemas.
 
+## 2026-10-27 · Sofía
+- Capítulo 2 — «El impacto del rayo»: cinemática de apertura. Al volver a la camioneta, un rayo
+  cae sobre la cuadrilla que revisa un poste: explosión azulada, la descarga alcanza la camioneta,
+  la lámpara de Leo estalla y, en la oscuridad, los trabajadores siguen de pie soltando chispas
+  con ojos azules. Uno gira la cabeza hacia Leo.
+- Trabajadores electrizados a partir del dibujo de la autora (`assets/fuentes/trabajador_electrizado.ase`),
+  repintados con la paleta y el uniforme de Leo, rasgado tras la descarga. Se generan con
+  `python tools/gen_cap2_art.py`.
+- La pantalla de victoria ahora tiene «Continuar: Capítulo 2». El reproductor de cinemáticas
+  acepta cualquier guion JSON (`data_path`).
+- Falta: la parte jugable del Capítulo 2 después de la cinemática.
+
 ## 2026-10-27 · Equipo
 - Proyecto subido a GitHub. Se crearon `CONTEXTO.md` (contexto y reglas) y esta bitácora.
 - Compilados del Capítulo 1 publicados en Releases (Windows y Mac), reconstruidos desde la

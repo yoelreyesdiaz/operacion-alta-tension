@@ -1,0 +1,43 @@
+[
+  {"id": "negro", "duracion": 4.0, "entrada": "fade", "eventos": [
+    {"t": 0.0, "loop": "lluvia", "vol": -10.0},
+    {"t": 0.6, "hora": "23:08 · S.E. ATEMAJAC", "hold": 2.6}
+  ]},
+  {"id": "patio", "duracion": 12.0, "entrada": "fade", "eventos": [
+    {"t": 0.0, "loop": "zumbido", "vol": -22.0},
+    {"t": 0.8, "radio": ["Leo", "Inge, el portón ya abrió. Voy a la camioneta por más equipo."], "hold": 1.4},
+    {"t": 4.4, "radio": ["Ing. Morales", "Copiado. La cuadrilla de líneas ya está en el poste de la entrada."], "hold": 1.4},
+    {"t": 8.2, "narra": "Tres compañeros revisan el poste. Leo apura el paso; ya casi llega.", "hold": 1.6},
+    {"t": 11.0, "sfx": "zumbido", "vol": -6.0}
+  ]},
+  {"id": "impacto", "duracion": 6.5, "entrada": "corte", "eventos": [
+    {"t": 0.3, "accion": "rayo"},
+    {"t": 0.35, "sfx": "trueno", "vol": 2.0},
+    {"t": 0.4, "accion": "explosion"},
+    {"t": 0.4, "sfx": "chispa", "vol": 2.0},
+    {"t": 0.4, "fade_loop": "zumbido", "vol": -60.0, "tiempo": 0.2},
+    {"t": 1.1, "accion": "arco_camioneta"},
+    {"t": 1.1, "sfx": "apagon", "vol": 0.0},
+    {"t": 1.9, "accion": "lampara"},
+    {"t": 1.9, "sfx": "chispa", "vol": -2.0},
+    {"t": 2.6, "accion": "oscuridad"},
+    {"t": 4.0, "radio": ["Leo", "¡Ah! ...La lámpara. ¡Inge! ¿Me copia? ...¿Inge?"], "hold": 1.4}
+  ]},
+  {"id": "oscuro", "duracion": 9.0, "entrada": "corte", "eventos": [
+    {"t": 0.0, "loop": "musica_tension", "vol": -16.0, "bus": "Musica"},
+    {"t": 0.6, "narra": "La luz se apaga. Pero los tres siguen de pie.", "hold": 1.8},
+    {"t": 3.4, "sfx": "chispa", "vol": -10.0},
+    {"t": 4.6, "radio": ["Leo", "¿Compañeros? ¿Están bien?"], "hold": 1.4},
+    {"t": 6.5, "sfx": "chispa", "vol": -12.0}
+  ]},
+  {"id": "giro", "duracion": 8.0, "entrada": "corte", "eventos": [
+    {"t": 0.0, "fade_loop": "musica_tension", "vol": -10.0, "tiempo": 2.0},
+    {"t": 1.2, "sfx": "zumbido", "vol": -8.0},
+    {"t": 4.0, "sfx": "chispa", "vol": -4.0},
+    {"t": 5.0, "narra": "Uno de ellos gira la cabeza... hacia Leo.", "hold": 1.8}
+  ]},
+  {"id": "titulo2", "duracion": 6.0, "entrada": "fade", "eventos": [
+    {"t": 0.4, "capitulo": ["CAPÍTULO 2", "El impacto del rayo"]},
+    {"t": 5.0, "fade_loop": "musica_tension", "vol": -40.0, "tiempo": 1.0}
+  ]}
+]

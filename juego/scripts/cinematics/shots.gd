@@ -3,10 +3,16 @@ extends Node2D
 ## assets/cinematics (tools/gen_intro_art.py); aquí se dibujan las capas vivas:
 ## lluvia, luces de la ciudad y su apagón en ola, rayos, arco eléctrico, tablero
 ## mímico, alarmas, limpiaparabrisas, vehículos, balizas y el título.
+## Capítulo 2: patio con la cuadrilla, impacto del rayo, oscuridad y el primer plano
+## del trabajador electrizado (tools/gen_cap2_art.py).
 
 const DIR := "res://assets/cinematics/%s.png"
 const BG := {"ciudad": "ciudad", "subestacion": "subestacion", "control": "control",
-	"cabina": "cabina", "carretera": "carretera", "porton": "porton_frente"}
+	"cabina": "cabina", "carretera": "carretera", "porton": "porton_frente",
+	"patio": "patio_noche", "impacto": "patio_noche"}
+const POLE_TOP := Vector2(106, 46)
+const WORKERS := [Vector2(78, 164), Vector2(96, 166), Vector2(150, 164)]
+const LEO_STOP := 300.0
 const MONITORES := [Rect2(40, 142, 60, 26), Rect2(110, 146, 50, 22), Rect2(266, 146, 50, 22), Rect2(330, 142, 60, 26)]
 const RAIN := Color(0.55, 0.68, 0.9, 0.35)
 const WARM := [Color("ffe27a"), Color("f2b81c"), Color("e8a050"), Color("fff2c8"), Color("e8791c")]
@@ -24,12 +30,25 @@ var _title_t := -1.0
 var _wiper_prev := 0.0
 var _truck: Texture2D
 var _van: Texture2D
+var _leo: Texture2D
+var _worker: Texture2D
+var _closeup: Texture2D
+var _expl_t := 0.0
+var _arc2_t := 0.0
+var _lamp_t := 0.0
+var _lamp_on := true
+var _truck_on := true
+var _dark := 0.0
+var _dark_on := false
 var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
 	_truck = load(DIR % "camioneta_lado")
 	_van = load(DIR % "unidad_lado")
+	_leo = load("res://assets/sprites/leo.png")
+	_worker = load("res://assets/sprites/trabajador.png")
+	_closeup = load(DIR % "trabajador_cerca")
 
 
 func set_shot(new_id: String) -> void:
@@ -40,6 +59,14 @@ func set_shot(new_id: String) -> void:
 	_arc_t = 0.0
 	_van_x = 9999.0
 	_title_t = -1.0
+	_expl_t = 0.0
+	_arc2_t = 0.0
+	_lamp_t = 0.0
+	if new_id == "patio":
+		_lamp_on = true
+		_truck_on = true
+		_dark_on = false
+		_dark = 0.0
 	_bg = load(DIR % BG[id]) if BG.has(id) else null
 	_lights = []
 	_rng.seed = 7
@@ -59,6 +86,8 @@ func action(name: String) -> void:
 	match name:
 		"rayo":
 			var target := Vector2(112, 54) if id == "subestacion" else Vector2(_rng.randf_range(260, 330), 140)
+			if id == "impacto":
+				target = POLE_TOP
 			_bolt = _make_bolt(Vector2(target.x + _rng.randf_range(-40, 40), -4), target)
 			_bolt_t = 0.45
 		"arco":
@@ -69,6 +98,16 @@ func action(name: String) -> void:
 			_van_x = 470.0
 		"titulo":
 			_title_t = 0.0
+		"explosion":
+			_expl_t = 1.0
+		"arco_camioneta":
+			_arc2_t = 0.8
+			_truck_on = false
+		"lampara":
+			_lamp_t = 0.7
+			_lamp_on = false
+		"oscuridad":
+			_dark_on = true
 
 
 func _make_bolt(from: Vector2, to: Vector2) -> PackedVector2Array:
@@ -91,6 +130,11 @@ func _process(delta: float) -> void:
 		_van_x -= delta * 250.0
 	if _title_t >= 0.0:
 		_title_t += delta
+	_expl_t = max(0.0, _expl_t - delta)
+	_arc2_t = max(0.0, _arc2_t - delta)
+	_lamp_t = max(0.0, _lamp_t - delta)
+	if _dark_on:
+		_dark = min(0.93, _dark + delta * 1.2)
 	if id == "cabina":
 		var p := fposmod(t, 1.6) / 1.6
 		if (p < 0.5) != (_wiper_prev < 0.5):
@@ -123,6 +167,16 @@ func _draw() -> void:
 		"porton":
 			_draw_gate()
 			_draw_rain(140, 0.35)
+		"patio", "impacto":
+			_draw_patio()
+			_draw_rain(140, 0.35)
+			if _dark > 0.0:
+				draw_rect(Rect2(0, 0, 426, 240), Color(0.01, 0.01, 0.03, _dark))
+		"oscuro":
+			_draw_dark_workers()
+			_draw_rain(60, 0.12)
+		"giro":
+			_draw_closeup()
 	if _bolt_t > 0.0:
 		var a := _bolt_t / 0.45
 		draw_rect(Rect2(0, 0, 426, 240), Color(0.85, 0.9, 1.0, 0.45 * a * a))
@@ -320,3 +374,94 @@ func _draw_gate() -> void:
 			var sp := Vector2(285, 76) + Vector2(_rng.randf_range(-20, 20), _rng.randf_range(-14, 18) * (1.0 - a + 0.3))
 			draw_rect(Rect2(sp.floor(), Vector2.ONE), Color(0.9, 0.95, 1.0, a))
 		draw_circle(Vector2(285, 76), 10.0 * a, Color(0.6, 0.85, 1.0, 0.5 * a))
+
+
+# ------------------------------------------------------------------ capítulo 2
+func _leo_x() -> float:
+	return minf(LEO_STOP, 190.0 + t * 9.5) if id == "patio" else LEO_STOP
+
+
+func _draw_patio() -> void:
+	# Faros de la camioneta (se apagan cuando la descarga la alcanza)
+	if _truck_on:
+		draw_colored_polygon(PackedVector2Array([Vector2(388, 180), Vector2(426, 168), Vector2(426, 196)]), Color(1, 0.95, 0.7, 0.14))
+	# Cuadrilla revisando el poste con sus lámparas
+	for i in WORKERS.size():
+		var w: Vector2 = WORKERS[i]
+		draw_texture_rect_region(_worker, Rect2(w, Vector2(20, 24)), Rect2(0, 0, 20, 24))
+		if _dark <= 0.0 and _expl_t <= 0.0:
+			draw_circle(w + Vector2(10, 4), 14.0, Color(1.0, 0.9, 0.55, 0.07))
+			draw_rect(Rect2(w + Vector2(9, 1), Vector2(2, 1)), Color("ffe27a"))
+	# Leo camina hacia la camioneta
+	var lx := _leo_x()
+	var walking := id == "patio" and lx < LEO_STOP
+	var f := int(t * 6.0) % 4 if walking else 0
+	var lp := Vector2(lx, 162)
+	draw_texture_rect_region(_leo, Rect2(lp, Vector2(20, 24)), Rect2(f * 20, 48, 20, 24))
+	var hand := lp + Vector2(15, 13)
+	if _lamp_on:
+		draw_colored_polygon(PackedVector2Array([hand, hand + Vector2(46, 8), hand + Vector2(46, 24)]), Color(1, 0.95, 0.7, 0.12))
+		draw_rect(Rect2(hand, Vector2(2, 2)), Color("fff2c8"))
+	# La lámpara estalla en su mano
+	if _lamp_t > 0.0:
+		var a := _lamp_t / 0.7
+		draw_circle(hand, 10.0 * a, Color(0.75, 0.9, 1.0, 0.6 * a))
+		for k in 12:
+			var sp := hand + Vector2(_rng.randf_range(-12, 12), _rng.randf_range(-10, 10) * (1.6 - a))
+			draw_rect(Rect2(sp.floor(), Vector2.ONE), Color(1, 0.95, 0.6, a))
+	# Explosión azulada en el poste y el equipo
+	if _expl_t > 0.0:
+		var e := _expl_t
+		draw_rect(Rect2(0, 0, 426, 240), Color(0.35, 0.6, 1.0, 0.55 * e * e))
+		draw_circle(POLE_TOP + Vector2(6, 26), 70.0 * (1.2 - e), Color(0.45, 0.75, 1.0, 0.35 * e))
+		draw_circle(Vector2(134, 170), 40.0 * (1.2 - e), Color(0.45, 0.75, 1.0, 0.3 * e))
+		draw_circle(POLE_TOP + Vector2(6, 26), 16.0 * e, Color(0.9, 0.97, 1.0, 0.9 * e))
+		for k in 30:
+			var sp := POLE_TOP + Vector2(_rng.randf_range(-40, 40), _rng.randf_range(-20, 140) * (1.2 - e))
+			draw_rect(Rect2(sp.floor(), Vector2.ONE), Color(0.8, 0.95, 1.0, e))
+	# La descarga salta del poste a la camioneta
+	if _arc2_t > 0.0 and int(_arc2_t * 30) % 3 != 0:
+		var a2 := _arc2_t / 0.8
+		var pts := _make_bolt(POLE_TOP + Vector2(12, 30), Vector2(360, 176))
+		draw_polyline(pts, Color(0.5, 0.8, 1.0, a2), 2.0)
+		draw_polyline(pts, Color(1, 1, 1, a2), 1.0)
+		draw_circle(Vector2(360, 176), 12.0 * a2, Color(0.5, 0.8, 1.0, 0.4 * a2))
+
+
+func _draw_dark_workers() -> void:
+	# Solo se ven siluetas, chispas y los ojos azules, uno por uno
+	draw_rect(Rect2(0, 0, 426, 240), Color(0.01, 0.01, 0.03))
+	for i in WORKERS.size():
+		var w: Vector2 = WORKERS[i]
+		var on := t > 1.4 + i * 0.9
+		draw_texture_rect_region(_worker, Rect2(w, Vector2(20, 24)), Rect2(0, 24, 20, 24), Color(0.12, 0.15, 0.25))
+		if (int(t * 9) + i * 5) % 7 == 0:
+			for k in 6:
+				var sp := w + Vector2(_rng.randf_range(2, 18), _rng.randf_range(4, 22))
+				draw_rect(Rect2(sp.floor(), Vector2.ONE), Color(0.7, 0.9, 1.0))
+			draw_circle(w + Vector2(10, 12), 9.0, Color(0.4, 0.7, 1.0, 0.12))
+		if on:
+			var glow := 0.75 + 0.25 * sin(t * 5.0 + i)
+			for ex in [8, 11]:
+				draw_rect(Rect2(w + Vector2(ex, 8), Vector2.ONE), Color(0.75, 0.93, 1.0, glow))
+			draw_circle(w + Vector2(10, 8), 5.0, Color(0.25, 0.7, 1.0, 0.18 * glow))
+	# Leo, apenas visible
+	draw_texture_rect_region(_leo, Rect2(Vector2(LEO_STOP, 162), Vector2(20, 24)), Rect2(0, 48, 20, 24), Color(0.1, 0.11, 0.15))
+
+
+func _draw_closeup() -> void:
+	draw_rect(Rect2(0, 0, 426, 240), Color(0.02, 0.02, 0.05))
+	var frame := 0 if t < 2.6 else (1 if t < 4.2 else 2)
+	var pos := Vector2(117, 36)
+	var flick := 0.85 + 0.15 * sin(t * 13.0)
+	draw_circle(pos + Vector2(96, 110), 120.0, Color(0.2, 0.45, 0.9, 0.06 * flick))
+	draw_texture_rect_region(_closeup, Rect2(pos, Vector2(192, 192)), Rect2(frame * 64, 0, 64, 64), Color(0.55, 0.62, 0.85) * flick)
+	if frame == 2:
+		for ex: Vector2 in [Vector2(76, 28), Vector2(100, 28)]:
+			draw_circle(pos + ex, 10.0, Color(0.3, 0.75, 1.0, 0.25 * flick))
+	# Chispas que suelta el cuerpo
+	if int(t * 8) % 3 != 0:
+		for k in 10:
+			var sp := pos + Vector2(_rng.randf_range(30, 160), _rng.randf_range(60, 180))
+			draw_rect(Rect2(sp.floor(), Vector2(2, 2)), Color(0.75, 0.93, 1.0, 0.9))
+			draw_line(sp, sp + Vector2(_rng.randf_range(-6, 6), _rng.randf_range(-6, 6)), Color(0.5, 0.8, 1.0, 0.7))

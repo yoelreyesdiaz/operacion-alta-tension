@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/cinematics/cinematic.gd" id="1"]
+
+[node name="Cap2Impacto" type="Node2D"]
+script = ExtResource("1")
+data_path = "res://data/cinematica_cap2.json"
+next_scene = "res://scenes/ui/main_menu.tscn"

@@ -1,5 +1,5 @@
 extends Node2D
-## Reproductor de cinemáticas guionizadas en JSON (data/cinematica_intro.json).
+## Reproductor de cinemáticas guionizadas en JSON (data/cinematica_*.json).
 ## Cada toma tiene duración, transición de entrada y eventos con tiempo:
 ## narra, radio, hora, capitulo, sfx, loop, fade_loop y accion (efectos de la toma).
 ## Mantener [E]/[Esc]/[Enter] salta la cinemática.
@@ -7,10 +7,10 @@ extends Node2D
 signal shot_started(id: String)
 signal finished
 
-const DATA := "res://data/cinematica_intro.json"
 const SHOTS := preload("res://scripts/cinematics/shots.gd")
 const SKIP_HOLD := 0.8
 
+@export var data_path := "res://data/cinematica_intro.json"
 @export var next_scene := "res://scenes/levels/zona_01.tscn"
 
 var shots: Array = []
@@ -25,7 +25,7 @@ var _done := false
 
 
 func _ready() -> void:
-	shots = JSON.parse_string(FileAccess.get_file_as_string(DATA))
+	shots = JSON.parse_string(FileAccess.get_file_as_string(data_path))
 	_view = SHOTS.new()
 	add_child(_view)
 	var layer := CanvasLayer.new()
