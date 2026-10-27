@@ -5,7 +5,9 @@
 
 ## 2026-10-27 · Equipo
 - Proyecto subido a GitHub. Se crearon `CONTEXTO.md` (contexto y reglas) y esta bitácora.
-- Compilados del Capítulo 1 publicados en Releases (Windows y Mac).
+- Compilados del Capítulo 1 publicados en Releases (Windows y Mac), reconstruidos desde la
+  versión más reciente: intro, tablero de 7 nodos con timer de 45 s y apertura del portón.
+- Repositorio público para compartir el avance.
 
 ## 2026-10-23 · Equipo
 - Todo el proyecto quedó en una sola carpeta: juego, ejecutables, avances y herramientas.
