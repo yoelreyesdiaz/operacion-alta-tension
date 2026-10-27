@@ -42,6 +42,11 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
 5. Sube tu rama y abre un **Pull Request** en GitHub para que el equipo lo revise antes de unirlo a `main`.
 6. Los compilados (.exe / .app) no van en el código: se publican en **Releases** de GitHub.
 
+## Cómo unirse al equipo
+- Para **ver** el avance basta el link del repositorio (es público).
+- Para **subir cambios** hace falta una cuenta de GitHub y una invitación del dueño:
+  Settings → Collaborators → Add people (por usuario o correo). Llega un correo para aceptar.
+
 ## Reglas y decisiones del proyecto
 - Resolución 426×240 con escalado entero; pixel art nítido (filtro *nearest*).
 - Textos y datos en `juego/data/*.json` siempre que se pueda, para editarlos sin programar.
