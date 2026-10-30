@@ -59,6 +59,12 @@ func fade_loop(sound: String, volume_db: float, time := 1.5) -> void:
 		create_tween().tween_property(_loops[sound], "volume_db", volume_db, time)
 
 
+## Acelera o frena un bucle (p. ej. la música en una persecución).
+func pitch_loop(sound: String, pitch: float, time := 1.0) -> void:
+	if _loops.has(sound):
+		create_tween().tween_property(_loops[sound], "pitch_scale", pitch, time)
+
+
 func stop_loops() -> void:
 	for k: String in _loops:
 		_loops[k].queue_free()

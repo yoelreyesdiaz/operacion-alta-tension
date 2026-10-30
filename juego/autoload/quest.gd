@@ -1,5 +1,5 @@
 extends Node
-## Objetivos lineales del capítulo. Tolera que el jugador los cumpla fuera de orden.
+## Objetivos lineales de cada capítulo. Tolera que el jugador los cumpla fuera de orden.
 
 signal changed
 
@@ -11,11 +11,26 @@ const CAP1 := [
 	["reparar", "Lleva la energía del TSA-01 al portón"],
 	["abrir", "Abre el portón y entra al patio"],
 ]
+const CAP2 := [
+	["transformador", "Ve al transformador con tu cuadrilla"],
+	["ayudar", "Ayuda a tus compañeros"],
+	["edificio", "¡Corre al edificio!"],
+]
+const CAPS := {1: CAP1, 2: CAP2}
 
+var chapter := 1
 var done: Array = []
 
 
 func reset() -> void:
+	chapter = 1
+	done = []
+	changed.emit()
+
+
+## Empieza los objetivos de otro capítulo.
+func start_chapter(n: int) -> void:
+	chapter = n
 	done = []
 	changed.emit()
 
@@ -32,23 +47,24 @@ func is_done(id: String) -> bool:
 
 
 func current_id() -> String:
-	for o: Array in CAP1:
+	for o: Array in CAPS[chapter]:
 		if not o[0] in done:
 			return o[0]
 	return ""
 
 
 func current_text() -> String:
-	for o: Array in CAP1:
+	for o: Array in CAPS[chapter]:
 		if not o[0] in done:
 			return o[1]
-	return "Capítulo 1 completado"
+	return "Capítulo %d completado" % chapter
 
 
 func to_dict() -> Dictionary:
-	return {"done": done}
+	return {"chapter": chapter, "done": done}
 
 
 func from_dict(d: Dictionary) -> void:
+	chapter = int(d.get("chapter", 1))
 	done = d.get("done", [])
 	changed.emit()
