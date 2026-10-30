@@ -12,7 +12,7 @@ const MENU := "res://scenes/ui/main_menu.tscn"
 const INTRO := "res://scenes/cinematics/intro.tscn"
 const ZONA_01 := "res://scenes/levels/zona_01.tscn"
 const VICTORIA := "res://scenes/ui/victory.tscn"
-const CAP2 := "res://scenes/cinematics/cap2_impacto.tscn"
+const CAP2 := "res://scenes/levels/zona_02.tscn"
 
 var health := MAX_HEALTH
 var flags := {}

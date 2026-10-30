@@ -1,7 +1,7 @@
 extends Node2D
 ## Reproductor de cinemáticas guionizadas en JSON (data/cinematica_*.json).
 ## Cada toma tiene duración, transición de entrada y eventos con tiempo:
-## narra, radio, hora, capitulo, sfx, loop, fade_loop y accion (efectos de la toma).
+## narra, radio, hora, capitulo, sfx, loop, fade_loop y accion (ver CineEvents).
 ## Mantener [E]/[Esc]/[Enter] salta la cinemática.
 
 signal shot_started(id: String)
@@ -70,28 +70,9 @@ func _process(delta: float) -> void:
 		return
 	_t += delta
 	while not _events.is_empty() and float(_events[0]["t"]) <= _t:
-		_fire(_events.pop_front())
+		CineEvents.fire(_events.pop_front(), _view.action)
 	if _t >= float(shots[_i]["duracion"]):
 		_advance()
-
-
-func _fire(e: Dictionary) -> void:
-	if e.has("narra"):
-		Narrator.say(e["narra"], float(e.get("hold", 2.0)))
-	elif e.has("radio"):
-		Narrator.line(e["radio"][0], e["radio"][1], float(e.get("hold", 1.5)), bool(e.get("arriba", false)))
-	elif e.has("hora"):
-		Narrator.stamp(e["hora"], float(e.get("hold", 3.0)))
-	elif e.has("capitulo"):
-		Narrator.chapter_card(e["capitulo"][0], e["capitulo"][1])
-	elif e.has("sfx"):
-		AudioManager.play(e["sfx"], float(e.get("vol", 0.0)))
-	elif e.has("loop"):
-		AudioManager.loop(e["loop"], float(e.get("vol", 0.0)), e.get("bus", "Ambiente"))
-	elif e.has("fade_loop"):
-		AudioManager.fade_loop(e["fade_loop"], float(e["vol"]), float(e.get("tiempo", 1.5)))
-	elif e.has("accion"):
-		_view.action(e["accion"])
 
 
 func _advance() -> void:

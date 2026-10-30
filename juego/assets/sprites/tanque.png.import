@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tpx6s6q1w6b5"
-path="res://.godot/imported/patio_noche.png-f373edf8f8db6d5dcfa9c3f0d219f9d6.ctex"
+uid="uid://bcvseb636y4rj"
+path="res://.godot/imported/tanque.png-f6aa8e122bea9e821a41b5ac103c7a0c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cinematics/patio_noche.png"
-dest_files=["res://.godot/imported/patio_noche.png-f373edf8f8db6d5dcfa9c3f0d219f9d6.ctex"]
+source_file="res://assets/sprites/tanque.png"
+dest_files=["res://.godot/imported/tanque.png-f6aa8e122bea9e821a41b5ac103c7a0c.ctex"]
 
 [params]
 

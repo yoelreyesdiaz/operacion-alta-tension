@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhh6v0u1asun7"
-path="res://.godot/imported/trabajador_cerca.png-2cae9479df2cb52ae456b7a6b1982eb2.ctex"
+uid="uid://nwr1ug36rdo1"
+path="res://.godot/imported/caseta_blanca.png-9366b6560f19910d1634561688782ab0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cinematics/trabajador_cerca.png"
-dest_files=["res://.godot/imported/trabajador_cerca.png-2cae9479df2cb52ae456b7a6b1982eb2.ctex"]
+source_file="res://assets/sprites/caseta_blanca.png"
+dest_files=["res://.godot/imported/caseta_blanca.png-9366b6560f19910d1634561688782ab0.ctex"]
 
 [params]
 

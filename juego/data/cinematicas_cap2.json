@@ -1,0 +1,38 @@
+{
+  "entrada": [
+    {"t": 0.3, "hora": "ZONA 2 · PATIO DE LA PLANTA · 23:05", "hold": 3.0},
+    {"t": 1.8, "sfx": "radio", "vol": -8.0},
+    {"t": 2.0, "radio": ["Ing. Morales", "...kshh... la cuadrilla ya está en el transforma... kshh... ve con ellos."], "hold": 1.6},
+    {"t": 7.5, "radio": ["Cuadrilla", "¡Por aquí! Ya casi lo tenemos."], "hold": 1.4}
+  ],
+  "cin1": [
+    {"t": 0.0, "accion": "cam_transformador"},
+    {"t": 0.6, "radio": ["Cuadrilla", "¡Llegaste justo! Un último ajuste y queda."], "hold": 1.2},
+    {"t": 3.4, "accion": "chispazo"},
+    {"t": 3.4, "sfx": "chispa", "vol": -8.0},
+    {"t": 3.4, "fade_loop": "zumbido", "vol": -4.0, "tiempo": 1.0},
+    {"t": 4.6, "accion": "descarga"},
+    {"t": 4.6, "sfx": "chispa", "vol": 2.0},
+    {"t": 4.6, "sfx": "apagon", "vol": 0.0},
+    {"t": 5.3, "accion": "caen"},
+    {"t": 5.4, "silencio": true},
+    {"t": 7.0, "loop": "lluvia", "vol": -12.0},
+    {"t": 7.6, "narra": "La descarga alcanzó a los cinco. Ninguno se mueve.", "hold": 1.6},
+    {"t": 10.6, "accion": "cam_jugador"},
+    {"t": 12.2, "accion": "fin"}
+  ],
+  "cin2": [
+    {"t": 0.0, "accion": "cam_cuerpos"},
+    {"t": 0.7, "accion": "rayo"},
+    {"t": 0.75, "sfx": "trueno", "vol": 2.0},
+    {"t": 0.8, "sfx": "chispa", "vol": 0.0},
+    {"t": 1.1, "accion": "carga"},
+    {"t": 1.1, "loop": "zumbido", "vol": -8.0},
+    {"t": 2.2, "accion": "levantar"},
+    {"t": 3.6, "narra": "Se levantan... pero ya no son ellos.", "hold": 1.2},
+    {"t": 4.2, "accion": "avanzar"},
+    {"t": 6.4, "narra": "¡Al edificio! ¡Corre!", "hold": 1.0},
+    {"t": 7.6, "accion": "cam_jugador"},
+    {"t": 8.8, "accion": "fin"}
+  ]
+}

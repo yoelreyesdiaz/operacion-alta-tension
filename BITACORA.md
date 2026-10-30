@@ -3,6 +3,25 @@
 > Agrega tu entrada **arriba** (lo más reciente primero). Formato:
 > `## AAAA-MM-DD · Nombre` y luego viñetas: qué hiciste, qué falta, problemas.
 
+## 2026-10-30 · Sofía
+- Capítulo 2 jugable (Zona 2, `scenes/levels/zona_02.tscn`), que reemplaza la cinemática anterior
+  «El impacto del rayo». Secuencia: entrada por el portón del nivel 1 → zona A: cinemática 1
+  (los 5 compañeros reciben una descarga en el transformador y caen) → carrera para ayudarlos →
+  zona B: cinemática 2 (un rayo cae en el transformador y se levantan como trabajadores
+  electrizados) → huida al edificio (los zombis persiguen; caminando te alcanzan, corriendo con
+  SHIFT te les adelantas) → zona C: puerta de la oficina, fin con fundido.
+- Si te alcanzan, el tramo se reinicia desde el final de la cinemática 2 (no se repiten las cinemáticas).
+- Mapa abierto inspirado en la foto de referencia: naves al norte, fila de transformadores al
+  centro, patio de interruptores al suroeste, tanques al este, oficina y portón al sur.
+- Arte nuevo en `tools/gen_cap2_art.py` (naves, oficina, caseta, tanque); se reutilizan
+  `trabajador.png`, `trafo.png`, `interruptor_potencia.png` y el portón del nivel 1.
+- Guion de las cinemáticas en `data/cinematicas_cap2.json`. El reproductor de eventos ahora es
+  compartido (`scripts/cinematics/cine_events.gd`) entre cinemáticas y niveles.
+- Se quitó la intro anterior: `cap2_impacto.tscn`, `cinematica_cap2.json`, `patio_noche.png`,
+  `trabajador_cerca.png` y sus tomas en `shots.gd`.
+- Prueba nueva: `tests/test_cap2.tscn` (35 verificaciones, con persecución usando teclas reales).
+- Falta: qué pasa dentro del edificio (por ahora el nivel termina y vuelve al menú).
+
 ## 2026-10-27 · Sofía
 - Capítulo 2 — «El impacto del rayo»: cinemática de apertura. Al volver a la camioneta, un rayo
   cae sobre la cuadrilla que revisa un poste: explosión azulada, la descarga alcanza la camioneta,
