@@ -38,6 +38,9 @@ const LAMPS := [Vector2(440, 444), Vector2(560, 444), Vector2(300, 444), Vector2
 const ZOMBIE_SPEED := 82.0
 const ZOMBIE_RAMP := 1.2
 const CATCH_RADIUS := 12.0
+## Duración de la transformación (de "carga" a "levantar" en cinematicas_cap2.json).
+const TRANSFORM_TIME := 2.2
+const BOLT_TIME := 0.9
 
 var state := ""
 var restarts := 0
@@ -57,7 +60,13 @@ var _fx: Node2D
 var _lights: Array[PointLight2D] = []
 var _flicker_t := 0.0
 var _bolt := PackedVector2Array()
+var _bolt_branches: Array[PackedVector2Array] = []
 var _bolt_t := 0.0
+## Luz del impacto del rayo: ilumina todo el patio un instante.
+var _bolt_light: PointLight2D
+var _shake_t := 0.0
+## Mientras dura la transformación, el transformador sigue soltando arcos a los cuerpos.
+var _charge_t := 0.0
 var _arcs: Array = []  # [desde, hasta, tiempo]
 var _sparks_t := 0.0
 var _static_t := 3.0
@@ -92,6 +101,12 @@ func _ready() -> void:
 		cam.limit_right = W * T
 		cam.limit_bottom = H * T
 	_player.camera.reset_smoothing()
+	_bolt_light = PointLight2D.new()
+	_bolt_light.texture = Player.light_texture()
+	_bolt_light.texture_scale = 9.0
+	_bolt_light.color = Color(0.8, 0.9, 1.0)
+	_bolt_light.energy = 0.0
+	add_child(_bolt_light)
 	_fx = Node2D.new()
 	_fx.z_index = 50
 	_fx.draw.connect(_draw_fx)
@@ -153,7 +168,7 @@ func _action(name: String) -> void:
 		"cam_transformador":
 			_cam_to(TRANSFORMER + Vector2(0, 30), 1.4)
 		"cam_cuerpos":
-			_cam_to((TRANSFORMER + HUIDA_START) / 2.0, 1.0)
+			_cam_to(TRANSFORMER + Vector2(0, 4), 0.6)
 		"cam_jugador":
 			_cam_back(1.4)
 		"chispazo":
@@ -170,14 +185,12 @@ func _action(name: String) -> void:
 			for i in workers.size():
 				workers[i].fall(FALL_POS[i], FALL_SIDE[i])
 		"rayo":
-			_bolt = _make_bolt(Vector2(TRANSFORMER.x + _rng.randf_range(-30, 30), _cam.global_position.y - 130), TRANSFORMER + Vector2(0, -36))
-			_bolt_t = 0.5
-			_flicker_t = 1.0
-			_weather.flash()
-			Transition.flash(Color.WHITE, 0.4)
+			_strike()
 		"carga":
+			_charge_t = TRANSFORM_TIME
 			for w in workers:
 				_arc(TRANSFORMER + Vector2(0, -10), w.global_position + Vector2(0, -6), 1.0)
+				w.charge(TRANSFORM_TIME)
 		"levantar":
 			for w in workers:
 				w.rise()
@@ -272,6 +285,16 @@ func _process(delta: float) -> void:
 		CineEvents.fire(_queue.pop_front()["e"], _action)
 	_flicker_t = maxf(0.0, _flicker_t - delta)
 	_bolt_t = maxf(0.0, _bolt_t - delta)
+	_bolt_light.energy = 5.0 * pow(_bolt_t / BOLT_TIME, 3.0) * (0.4 if int(_bolt_t * 30) % 3 == 0 else 1.0)
+	_shake_t = maxf(0.0, _shake_t - delta)
+	_cam.offset = Vector2(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1)) * 5.0 * _shake_t if _shake_t > 0.0 else Vector2.ZERO
+	if _charge_t > 0.0:
+		_charge_t -= delta
+		if _rng.randf() < delta * 10.0:
+			var w: Companero = workers[_rng.randi() % workers.size()]
+			_arc(TRANSFORMER + Vector2(_rng.randf_range(-10, 10), -16), w.global_position + Vector2(0, -4), 0.2)
+			if _rng.randf() < 0.4:
+				AudioManager.play("chispa", -12.0, 0.3)
 	for a: Array in _arcs:
 		a[2] -= delta
 	_arcs = _arcs.filter(func(a: Array) -> bool: return a[2] > 0.0)
@@ -328,10 +351,31 @@ func _arc(from: Vector2, to: Vector2, time := 0.5) -> void:
 	_arcs.append([from, to, time])
 
 
-func _make_bolt(from: Vector2, to: Vector2) -> PackedVector2Array:
+## El segundo rayo: cae sobre el transformador con dos golpes, ramas, onda en el piso
+## y una luz que ilumina todo el patio.
+func _strike() -> void:
+	var top := Vector2(TRANSFORMER.x + _rng.randf_range(-30, 30), _cam.global_position.y - 140)
+	_bolt = _make_bolt(top, TRANSFORMER + Vector2(0, -36), 18, 10.0)
+	_bolt_branches.clear()
+	for i in 4:
+		var from := _bolt[_rng.randi_range(3, 12)]
+		var side := -1.0 if i % 2 == 0 else 1.0
+		_bolt_branches.append(_make_bolt(from, from + Vector2(side * _rng.randf_range(20, 45), _rng.randf_range(20, 40)), 6, 4.0))
+	_bolt_t = BOLT_TIME
+	_bolt_light.global_position = TRANSFORMER + Vector2(0, -36)
+	_shake_t = 0.6
+	_flicker_t = 1.6
+	_weather.flash()
+	Transition.flash(Color.WHITE, 0.6)
+	get_tree().create_timer(0.22).timeout.connect(func() -> void:  # segundo golpe
+		_weather.flash()
+		Transition.flash(Color(0.85, 0.93, 1.0), 0.45))
+
+
+func _make_bolt(from: Vector2, to: Vector2, steps := 12, jitter := 7.0) -> PackedVector2Array:
 	var pts := PackedVector2Array([from])
-	for i in range(1, 12):
-		pts.append(from.lerp(to, i / 12.0) + Vector2(_rng.randf_range(-7, 7), 0))
+	for i in range(1, steps):
+		pts.append(from.lerp(to, float(i) / steps) + Vector2(_rng.randf_range(-jitter, jitter), 0))
 	pts.append(to)
 	return pts
 
@@ -343,11 +387,22 @@ func _draw_fx() -> void:
 		_fx.draw_polyline(pts, Color(0.5, 0.8, 1.0, al), 2.0)
 		_fx.draw_polyline(pts, Color(1, 1, 1, al), 1.0)
 		_fx.draw_circle(a[1], 5.0, Color(0.5, 0.8, 1.0, 0.4 * al))
-	if _bolt_t > 0.0 and int(_bolt_t * 30) % 3 != 0:
-		var b := _bolt_t / 0.5
-		_fx.draw_polyline(_bolt, Color(0.75, 0.88, 1.0, b), 3.0)
-		_fx.draw_polyline(_bolt, Color(1, 1, 1, b), 1.0)
-		_fx.draw_circle(_bolt[_bolt.size() - 1], 18.0 * b, Color(0.6, 0.85, 1.0, 0.5 * b))
+	if _bolt_t > 0.0:
+		var b := _bolt_t / BOLT_TIME
+		var hit := _bolt[_bolt.size() - 1]
+		var ring := 1.0 - b  # onda expansiva en el piso
+		_fx.draw_arc(hit + Vector2(0, 36), 20.0 + 90.0 * ring, 0.0, TAU, 40, Color(0.7, 0.9, 1.0, 0.6 * b), 2.0)
+		_fx.draw_circle(hit, 40.0 * b, Color(0.6, 0.85, 1.0, 0.35 * b))
+		if int(_bolt_t * 30) % 5 != 0:  # el rayo parpadea
+			var c := minf(1.0, b * 2.0)  # el trazo se mantiene sólido casi todo el golpe
+			for br in _bolt_branches:
+				_fx.draw_polyline(br, Color(0.1, 0.25, 0.65, c), 3.0)
+				_fx.draw_polyline(br, Color(1, 1, 1, c), 1.0)
+			_fx.draw_polyline(_bolt, Color(0.4, 0.7, 1.0, 0.45 * c), 11.0)
+			_fx.draw_polyline(_bolt, Color(0.1, 0.25, 0.65, c), 6.0)  # contorno: contraste con el destello
+			_fx.draw_polyline(_bolt, Color(0.45, 0.75, 1.0, c), 4.0)
+			_fx.draw_polyline(_bolt, Color(1, 1, 1, c), 2.0)
+			_fx.draw_circle(hit, 22.0 * b, Color(1, 1, 1, 0.8 * b))
 
 
 # ------------------------------------------------------------------ zonas

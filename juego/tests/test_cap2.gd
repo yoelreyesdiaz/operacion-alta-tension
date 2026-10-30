@@ -139,7 +139,13 @@ func _run() -> void:
 	leo.global_position = lv.ZONE_B.get_center()
 	check(await wait_until(func() -> bool: return lv.state == "cin2", 2.0), "la zona B dispara la cinemática 2")
 	check(GameState.is_busy(), "sin control durante la cinemática 2")
-	await wait(3.0)
+	check(await wait_until(func() -> bool: return lv._bolt_t > 0.0 and lv._bolt_light.energy > 2.0, 3.0),
+		"el rayo ilumina el patio")
+	await shot("rayo")
+	await wait(0.3)
+	await shot("rayo_patio")
+	check(await wait_until(func() -> bool: return lv.workers[0]._charge_t > 0.0, 2.0), "se ve la transformación")
+	await wait(1.0)
 	await shot("cin2")
 	check(await wait_until(func() -> bool: return lv.state == "huida", 20.0), "termina la cinemática 2")
 	var zombies := 0

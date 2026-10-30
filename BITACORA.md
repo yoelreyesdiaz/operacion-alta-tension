@@ -10,6 +10,11 @@
   zona B: cinemática 2 (un rayo cae en el transformador y se levantan como trabajadores
   electrizados) → huida al edificio (los zombis persiguen; caminando te alcanzan, corriendo con
   SHIFT te les adelantas) → zona C: puerta de la oficina, fin con fundido.
+- Cinemática 2 más intensa: el rayo cae con ramas, doble golpe, onda en el piso, temblor de
+  cámara y una luz que ilumina todo el patio. La transformación se ve: los cuerpos convulsionan
+  y parpadean entre su aspecto normal, el cuerpo cargado (fila 3 de `trabajador.png`) y el
+  electrizado; al levantarse la ropa humea. El uniforme electrizado queda rasgado y chamuscado
+  (manchas de quemado, dobladillo deshilachado, mangas rotas, agujeros en el pantalón).
 - Si te alcanzan, el tramo se reinicia desde el final de la cinemática 2 (no se repiten las cinemáticas).
 - Mapa abierto inspirado en la foto de referencia: naves al norte, fila de transformadores al
   centro, patio de interruptores al suroeste, tanques al este, oficina y portón al sur.

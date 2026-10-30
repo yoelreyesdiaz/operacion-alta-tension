@@ -24,15 +24,17 @@
   "cin2": [
     {"t": 0.0, "accion": "cam_cuerpos"},
     {"t": 0.7, "accion": "rayo"},
-    {"t": 0.75, "sfx": "trueno", "vol": 2.0},
-    {"t": 0.8, "sfx": "chispa", "vol": 0.0},
+    {"t": 0.72, "sfx": "trueno", "vol": 6.0},
+    {"t": 0.75, "sfx": "chispa", "vol": 4.0},
+    {"t": 0.95, "sfx": "trueno", "vol": 2.0},
     {"t": 1.1, "accion": "carga"},
-    {"t": 1.1, "loop": "zumbido", "vol": -8.0},
-    {"t": 2.2, "accion": "levantar"},
-    {"t": 3.6, "narra": "Se levantan... pero ya no son ellos.", "hold": 1.2},
-    {"t": 4.2, "accion": "avanzar"},
-    {"t": 6.4, "narra": "¡Al edificio! ¡Corre!", "hold": 1.0},
-    {"t": 7.6, "accion": "cam_jugador"},
-    {"t": 8.8, "accion": "fin"}
+    {"t": 1.1, "loop": "zumbido", "vol": -4.0},
+    {"t": 3.3, "accion": "levantar"},
+    {"t": 3.3, "fade_loop": "zumbido", "vol": -10.0, "tiempo": 1.0},
+    {"t": 4.6, "narra": "Se levantan... pero ya no son ellos.", "hold": 1.2},
+    {"t": 5.2, "accion": "avanzar"},
+    {"t": 7.4, "narra": "¡Al edificio! ¡Corre!", "hold": 1.0},
+    {"t": 8.6, "accion": "cam_jugador"},
+    {"t": 9.8, "accion": "fin"}
   ]
 }
