@@ -1,7 +1,16 @@
 # BITÁCORA DE AVANCES — Operación Alta Tensión
 
 > Agrega tu entrada **arriba** (lo más reciente primero). Formato:
-> `## AAAA-MM-DD · Nombre` y luego viñetas: qué hiciste, qué falta, problemas.
+> `## 2026-11-13 · Yoel
+- Capítulo 2, cinemática 2: el rayo ahora se ve caer. La cámara sube al cielo, el rayo baja en
+  zigzag desde arriba de la pantalla (nubes iluminadas y chispas en la punta) hasta el
+  transformador; golpe con destello más corto para que el rayo se vea; después la cámara baja y
+  la energía corre por el piso del transformador a cada cuerpo antes de que se levanten.
+- Cambios en `scripts/levels/zona_02.gd` (`_start_descent`, `_start_ground`, dibujo en `_draw_fx`)
+  y en el guion `cin2` de `data/cinematicas_cap2.json` (dura 11.25 s).
+- Pruebas: `test_circuito_model`, `playthrough` y `test_cap2` OK.
+
+## AAAA-MM-DD · Nombre` y luego viñetas: qué hiciste, qué falta, problemas.
 
 ## 2026-10-30 · Sofía
 - Capítulo 2 jugable (Zona 2, `scenes/levels/zona_02.tscn`), que reemplaza la cinemática anterior
