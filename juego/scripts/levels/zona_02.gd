@@ -41,6 +41,10 @@ const CATCH_RADIUS := 12.0
 ## Duración de la transformación (de "carga" a "levantar" en cinematicas_cap2.json).
 const TRANSFORM_TIME := 2.2
 const BOLT_TIME := 0.9
+## El rayo de la cinemática 2 baja desde el cielo en este tiempo antes del golpe.
+const DESCENT_TIME := 0.7
+## La energía recorre el piso del transformador a los cuerpos en este tiempo.
+const GROUND_TIME := 0.8
 
 var state := ""
 var restarts := 0
@@ -62,6 +66,12 @@ var _flicker_t := 0.0
 var _bolt := PackedVector2Array()
 var _bolt_branches: Array[PackedVector2Array] = []
 var _bolt_t := 0.0
+## Rayo bajando: recorrido completo y tiempo restante de la bajada.
+var _descent := PackedVector2Array()
+var _descent_t := 0.0
+## Energía corriendo por el piso hacia cada cuerpo, y tiempo que lleva.
+var _ground_paths: Array[PackedVector2Array] = []
+var _ground_t := -1.0
 ## Luz del impacto del rayo: ilumina todo el patio un instante.
 var _bolt_light: PointLight2D
 var _shake_t := 0.0
@@ -168,7 +178,9 @@ func _action(name: String) -> void:
 		"cam_transformador":
 			_cam_to(TRANSFORMER + Vector2(0, 30), 1.4)
 		"cam_cuerpos":
-			_cam_to(TRANSFORMER + Vector2(0, 4), 0.6)
+			_cam_to(TRANSFORMER + Vector2(0, 22), 0.7)
+		"cam_cielo":
+			_cam_to(TRANSFORMER + Vector2(0, -46), 0.6)
 		"cam_jugador":
 			_cam_back(1.4)
 		"chispazo":
@@ -185,7 +197,9 @@ func _action(name: String) -> void:
 			for i in workers.size():
 				workers[i].fall(FALL_POS[i], FALL_SIDE[i])
 		"rayo":
-			_strike()
+			_start_descent()
+		"propaga":
+			_start_ground()
 		"carga":
 			_charge_t = TRANSFORM_TIME
 			for w in workers:
@@ -285,6 +299,14 @@ func _process(delta: float) -> void:
 		CineEvents.fire(_queue.pop_front()["e"], _action)
 	_flicker_t = maxf(0.0, _flicker_t - delta)
 	_bolt_t = maxf(0.0, _bolt_t - delta)
+	if _descent_t > 0.0:
+		_descent_t -= delta
+		if _descent_t <= 0.0:
+			_strike()
+	if _ground_t >= 0.0:
+		_ground_t += delta
+		if _ground_t > GROUND_TIME + TRANSFORM_TIME:
+			_ground_t = -1.0
 	_bolt_light.energy = 5.0 * pow(_bolt_t / BOLT_TIME, 3.0) * (0.4 if int(_bolt_t * 30) % 3 == 0 else 1.0)
 	_shake_t = maxf(0.0, _shake_t - delta)
 	_cam.offset = Vector2(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1)) * 5.0 * _shake_t if _shake_t > 0.0 else Vector2.ZERO
@@ -354,8 +376,12 @@ func _arc(from: Vector2, to: Vector2, time := 0.5) -> void:
 ## El segundo rayo: cae sobre el transformador con dos golpes, ramas, onda en el piso
 ## y una luz que ilumina todo el patio.
 func _strike() -> void:
-	var top := Vector2(TRANSFORMER.x + _rng.randf_range(-30, 30), _cam.global_position.y - 140)
-	_bolt = _make_bolt(top, TRANSFORMER + Vector2(0, -36), 18, 10.0)
+	_bolt = _descent if not _descent.is_empty() else _make_bolt(
+		Vector2(TRANSFORMER.x, _cam.global_position.y - 140), TRANSFORMER + Vector2(0, -36), 18, 10.0)
+	_descent = PackedVector2Array()
+	AudioManager.play("trueno", 6.0)
+	AudioManager.play("chispa", 4.0)
+	get_tree().create_timer(0.25).timeout.connect(func() -> void: AudioManager.play("trueno", 2.0))
 	_bolt_branches.clear()
 	for i in 4:
 		var from := _bolt[_rng.randi_range(3, 12)]
@@ -366,10 +392,27 @@ func _strike() -> void:
 	_shake_t = 0.6
 	_flicker_t = 1.6
 	_weather.flash()
-	Transition.flash(Color.WHITE, 0.6)
+	Transition.flash(Color.WHITE, 0.22)  # corto: el rayo debe seguir viéndose
 	get_tree().create_timer(0.22).timeout.connect(func() -> void:  # segundo golpe
 		_weather.flash()
-		Transition.flash(Color(0.85, 0.93, 1.0), 0.45))
+		Transition.flash(Color(0.85, 0.93, 1.0), 0.2))
+
+
+## El rayo baja desde arriba de la pantalla hasta el transformador, en zigzag.
+func _start_descent() -> void:
+	var top := Vector2(TRANSFORMER.x + _rng.randf_range(-24, 24), _cam.global_position.y - 116)
+	_descent = _make_bolt(top, TRANSFORMER + Vector2(0, -36), 22, 11.0)
+	_descent_t = DESCENT_TIME
+
+
+## La descarga corre por el piso del transformador a cada cuerpo caído.
+func _start_ground() -> void:
+	_ground_paths.clear()
+	for w in workers:
+		var from := TRAFO_FOOT + Vector2(_rng.randf_range(-10, 10), -2)
+		_ground_paths.append(_make_bolt(from, w.global_position + Vector2(0, -2), 9, 5.0))
+	_ground_t = 0.0
+	AudioManager.play("chispa", 0.0, 0.2)
 
 
 func _make_bolt(from: Vector2, to: Vector2, steps := 12, jitter := 7.0) -> PackedVector2Array:
@@ -387,6 +430,37 @@ func _draw_fx() -> void:
 		_fx.draw_polyline(pts, Color(0.5, 0.8, 1.0, al), 2.0)
 		_fx.draw_polyline(pts, Color(1, 1, 1, al), 1.0)
 		_fx.draw_circle(a[1], 5.0, Color(0.5, 0.8, 1.0, 0.4 * al))
+	if _descent_t > 0.0 and not _descent.is_empty():
+		var k := 1.0 - _descent_t / DESCENT_TIME  # 0 → 1
+		var n := clampi(int(ceil(k * (_descent.size() - 1))) + 1, 2, _descent.size())
+		var lead := _descent.slice(0, n)
+		var top := _descent[0]
+		_fx.draw_circle(top, 46.0, Color(0.55, 0.75, 1.0, 0.16 + 0.22 * k))  # nube iluminada
+		_fx.draw_circle(top, 22.0, Color(0.85, 0.93, 1.0, 0.25 + 0.3 * k))
+		_fx.draw_polyline(lead, Color(0.4, 0.7, 1.0, 0.45), 12.0)
+		_fx.draw_polyline(lead, Color(0.1, 0.25, 0.65, 1.0), 6.0)
+		_fx.draw_polyline(lead, Color(0.5, 0.8, 1.0, 1.0), 4.0)
+		_fx.draw_polyline(lead, Color(1, 1, 1, 1.0), 2.0)
+		var tip := lead[lead.size() - 1]
+		for i in 3:  # ramitas que chisporrotean en la punta
+			var br := _make_bolt(tip, tip + Vector2(_rng.randf_range(-22, 22), _rng.randf_range(6, 18)), 3, 4.0)
+			_fx.draw_polyline(br, Color(0.1, 0.25, 0.65, 0.9), 3.0)
+			_fx.draw_polyline(br, Color(0.8, 0.92, 1.0, 1.0), 1.0)
+		_fx.draw_circle(tip, 9.0, Color(0.6, 0.85, 1.0, 0.5))
+		_fx.draw_circle(tip, 5.0, Color(1, 1, 1, 1.0))
+	if _ground_t >= 0.0:
+		var g := clampf(_ground_t / GROUND_TIME, 0.0, 1.0)
+		var fade := 1.0 if _ground_t <= GROUND_TIME else clampf(1.0 - (_ground_t - GROUND_TIME) / TRANSFORM_TIME, 0.0, 1.0)
+		for path in _ground_paths:
+			var n := clampi(int(ceil(g * (path.size() - 1))) + 1, 2, path.size())
+			var trail := path.slice(0, n)
+			var flick := 0.6 if _rng.randf() < 0.25 else 1.0
+			_fx.draw_polyline(trail, Color(0.3, 0.6, 1.0, 0.35 * fade * flick), 5.0)
+			_fx.draw_polyline(trail, Color(0.55, 0.85, 1.0, 0.9 * fade * flick), 2.0)
+			_fx.draw_polyline(trail, Color(1, 1, 1, 0.8 * fade * flick), 1.0)
+			if g < 1.0:  # cabeza de la descarga avanzando
+				_fx.draw_circle(trail[trail.size() - 1], 4.0, Color(1, 1, 1, 0.95))
+				_fx.draw_circle(trail[trail.size() - 1], 8.0, Color(0.5, 0.8, 1.0, 0.4))
 	if _bolt_t > 0.0:
 		var b := _bolt_t / BOLT_TIME
 		var hit := _bolt[_bolt.size() - 1]
