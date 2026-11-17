@@ -167,6 +167,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		Inventory.cycle(-1)
 	elif event.is_action_pressed("tool_next"):
 		Inventory.cycle(1)
+	elif event.is_action_pressed("tool_1"):
+		Inventory.equip_slot(0)
+	elif event.is_action_pressed("tool_2"):
+		Inventory.equip_slot(1)
 
 
 ## Descarga eléctrica: daño, empujón y parpadeo. Ignorada durante la invulnerabilidad.

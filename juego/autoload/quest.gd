@@ -15,6 +15,11 @@ const CAP2 := [
 	["transformador", "Ve al transformador con tu cuadrilla"],
 	["ayudar", "Ayuda a tus compañeros"],
 	["edificio", "¡Corre al edificio!"],
+	["puerta", "Revisa la puerta del pasillo"],
+	["tablero_puerta", "Abre el tablero TD-02 (pasillo)"],
+	["energia_puerta", "Lleva la energía a la puerta"],
+	["abrir_puerta", "Abre la puerta"],
+	["explorar", "Explora el edificio"],
 ]
 const CAPS := {1: CAP1, 2: CAP2}
 

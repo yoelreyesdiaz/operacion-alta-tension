@@ -20,6 +20,7 @@ func _ready() -> void:
 	layer = 60
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_lines = JSON.parse_string(FileAccess.get_file_as_string("res://data/dialogos_cap1.json"))
+	_lines.merge(JSON.parse_string(FileAccess.get_file_as_string("res://data/dialogos_cap2.json")))
 	_panel = PanelContainer.new()
 	_panel.add_theme_stylebox_override("panel", GameState.box(Color(GameState.C_BG, 0.96), GameState.C_GREEN))
 	_panel.position = Vector2(53, 182)

@@ -8,6 +8,8 @@ Uso: python tools/gen_cap2_art.py   (requiere Pillow)
   El diseño electrizado se basa en el dibujo de la autora (assets/fuentes/trabajador_electrizado.ase).
 - sprites/nave_grande.png, nave_larga.png, oficina.png, caseta_blanca.png, tanque.png:
   edificios de la planta (Zona 2) en vista 3/4, con techo de lámina y fachada al sur.
+- sprites/puerta_cerrada.png, puerta_abierta.png, banco_taller.png, estante.png, rack.png,
+  consola.png, maquina.png, cajas.png, muro_vidrio.png: interior del edificio.
 """
 import os
 import random
@@ -188,7 +190,143 @@ def planta():
     save(tanque(), "sprites", "tanque.png")
 
 
+# ---------------------------------------------------------------- interior del edificio
+RED, GRN = h(0xE24A3B), h(0x4ADE80)
+WOOD, WOOD_L = h(0x6E4E32), h(0x8D6844)
+CARD, CARD_D = h(0xB08A5A), h(0x8A6A42)
+GLASS, GLASS_L = h(0x8FC7E8, 120), h(0xD8F0FF, 170)
+
+
+def puerta_cerrada():
+    im = Image.new("RGBA", (48, 32), (0, 0, 0, 0))
+    rect(im, 0, 0, 47, 31, MG)
+    rect(im, 3, 6, 44, 30, WALL_D)
+    rect(im, 3, 6, 44, 7, WALL)
+    rect(im, 23, 6, 24, 30, DG)  # junta de las dos hojas
+    for x in (8, 15, 31, 38):
+        rect(im, x, 12, x + 3, 24, ROOF)
+    rect(im, 3, 28, 44, 30, Y)
+    for x in range(3, 45, 4):
+        rect(im, x, 28, x + 1, 30, K2)
+    rect(im, 21, 2, 26, 4, RED)  # luz de estado
+    return outline(im)
+
+
+def puerta_abierta():
+    im = Image.new("RGBA", (48, 32), (0, 0, 0, 0))
+    rect(im, 0, 0, 47, 5, MG)
+    rect(im, 0, 6, 2, 31, MG)
+    rect(im, 45, 6, 47, 31, MG)
+    rect(im, 21, 2, 26, 4, GRN)
+    return outline(im)
+
+
+def banco_taller():
+    im = Image.new("RGBA", (48, 24), (0, 0, 0, 0))
+    rect(im, 0, 6, 47, 14, WOOD)
+    rect(im, 0, 6, 47, 7, WOOD_L)
+    rect(im, 2, 15, 5, 23, DG)
+    rect(im, 42, 15, 45, 23, DG)
+    rect(im, 6, 2, 14, 7, RED)  # caja de herramientas
+    rect(im, 6, 2, 14, 2, h(0xF08070))
+    rect(im, 22, 5, 33, 6, LG)  # llave
+    rect(im, 38, 3, 42, 7, Y)
+    return outline(im)
+
+
+def estante():
+    im = Image.new("RGBA", (40, 36), (0, 0, 0, 0))
+    rect(im, 0, 0, 2, 35, MG)
+    rect(im, 37, 0, 39, 35, MG)
+    for y in (6, 18, 30):
+        rect(im, 0, y, 39, y + 1, LG)
+    for x, y, c in ((5, 1, CARD), (17, 2, BL), (27, 1, CARD_D), (6, 13, Y), (19, 13, CARD), (29, 14, OR), (6, 25, CARD_D), (20, 26, WH)):
+        rect(im, x, y, x + 7, y + 4, c)
+    return outline(im)
+
+
+def rack():
+    im = Image.new("RGBA", (20, 36), (0, 0, 0, 0))
+    rect(im, 0, 0, 19, 35, K2)
+    rect(im, 0, 0, 19, 1, MG)
+    for y in range(4, 32, 5):
+        rect(im, 2, y, 17, y + 3, DG)
+        im.putpixel((4, y + 1), GRN)
+        im.putpixel((7, y + 1), BL if y % 2 else GRN)
+        im.putpixel((10, y + 1), Y)
+    return outline(im)
+
+
+def consola():
+    im = Image.new("RGBA", (56, 28), (0, 0, 0, 0))
+    rect(im, 0, 12, 55, 27, MG)
+    rect(im, 0, 12, 55, 13, LG)
+    for x in (4, 22, 40):
+        rect(im, x, 0, x + 12, 10, K2)  # pantallas
+        rect(im, x + 1, 1, x + 11, 9, h(0x1D5E99))
+        rect(im, x + 2, 3, x + 8, 3, BL)
+        rect(im, x + 2, 6, x + 10, 6, GRN)
+    for x in range(4, 52, 4):
+        im.putpixel((x, 18), RED if x % 3 == 0 else GRN)
+        im.putpixel((x, 22), Y if x % 2 == 0 else BL)
+    return outline(im)
+
+
+def maquina():
+    im = Image.new("RGBA", (48, 40), (0, 0, 0, 0))
+    rect(im, 0, 8, 47, 39, h(0x3F6E5A))
+    rect(im, 0, 8, 47, 11, h(0x5A9078))
+    rect(im, 6, 0, 18, 8, MG)  # ducto
+    rect(im, 30, 2, 40, 8, DG)
+    for y in range(16, 30, 3):
+        rect(im, 4, y, 24, y, h(0x2C4F40))
+    rect(im, 30, 16, 42, 28, K2)
+    rect(im, 32, 18, 40, 22, GRN)
+    im.putpixel((33, 25), RED)
+    im.putpixel((37, 25), Y)
+    rect(im, 0, 36, 47, 39, YD)
+    return outline(im)
+
+
+def cajas():
+    im = Image.new("RGBA", (24, 24), (0, 0, 0, 0))
+    rect(im, 0, 10, 11, 23, CARD)
+    rect(im, 12, 10, 23, 23, CARD_D)
+    rect(im, 6, 0, 17, 9, CARD)
+    for x0 in (0, 12):
+        rect(im, x0 + 5, 10, x0 + 6, 23, KHD)
+    rect(im, 11, 0, 12, 9, KHD)
+    return outline(im)
+
+
+def muro_vidrio():
+    im = Image.new("RGBA", (48, 24), (0, 0, 0, 0))
+    rect(im, 0, 0, 47, 21, GLASS)
+    for k in range(3):  # reflejos
+        for y in range(4, 18):
+            x = 8 + k * 14 + (18 - y) // 2
+            im.putpixel((x, y), GLASS_L)
+    rect(im, 0, 0, 47, 1, MG)
+    rect(im, 0, 0, 1, 23, MG)
+    rect(im, 46, 0, 47, 23, MG)
+    rect(im, 0, 21, 47, 23, DG)
+    return im
+
+
+def interior():
+    save(puerta_cerrada(), "sprites", "puerta_cerrada.png")
+    save(puerta_abierta(), "sprites", "puerta_abierta.png")
+    save(banco_taller(), "sprites", "banco_taller.png")
+    save(estante(), "sprites", "estante.png")
+    save(rack(), "sprites", "rack.png")
+    save(consola(), "sprites", "consola.png")
+    save(maquina(), "sprites", "maquina.png")
+    save(cajas(), "sprites", "cajas.png")
+    save(muro_vidrio(), "sprites", "muro_vidrio.png")
+
+
 if __name__ == "__main__":
     save(worker_sheet(), "sprites", "trabajador.png")
     planta()
+    interior()
     print("Arte del Capítulo 2 generado.")

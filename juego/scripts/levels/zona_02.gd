@@ -275,7 +275,7 @@ func _finish() -> void:
 	for w in workers:
 		w.stop()
 	AudioManager.fade_loop("musica_tension", -40.0, 0.6)
-	GameState.goto(GameState.MENU)
+	GameState.goto(GameState.EDIFICIO)
 
 
 # ------------------------------------------------------------------ cada cuadro

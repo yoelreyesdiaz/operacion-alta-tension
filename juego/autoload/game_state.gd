@@ -13,6 +13,7 @@ const INTRO := "res://scenes/cinematics/intro.tscn"
 const ZONA_01 := "res://scenes/levels/zona_01.tscn"
 const VICTORIA := "res://scenes/ui/victory.tscn"
 const CAP2 := "res://scenes/levels/zona_02.tscn"
+const EDIFICIO := "res://scenes/levels/edificio.tscn"
 
 var health := MAX_HEALTH
 var flags := {}
@@ -102,7 +103,7 @@ func _setup_input() -> void:
 		"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 		"move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN],
 		"interact": [KEY_E], "run": [KEY_SHIFT], "inventory": [KEY_TAB], "map": [KEY_M],
-		"tool_prev": [KEY_Q], "tool_next": [KEY_R], "pause": [KEY_ESCAPE],
+		"tool_prev": [KEY_Q], "tool_next": [KEY_R], "tool_1": [KEY_1], "tool_2": [KEY_2], "pause": [KEY_ESCAPE],
 		"puzzle_rotate": [KEY_SPACE], "puzzle_start": [KEY_1], "puzzle_measure": [KEY_2],
 		"puzzle_fuse": [KEY_F],
 	}
@@ -114,6 +115,7 @@ func _setup_input() -> void:
 		"move_left": JOY_BUTTON_DPAD_LEFT, "move_right": JOY_BUTTON_DPAD_RIGHT,
 		"move_up": JOY_BUTTON_DPAD_UP, "move_down": JOY_BUTTON_DPAD_DOWN,
 	}
+	var wheel := {"tool_prev": MOUSE_BUTTON_WHEEL_UP, "tool_next": MOUSE_BUTTON_WHEEL_DOWN}
 	var axes := {"move_left": [JOY_AXIS_LEFT_X, -1.0], "move_right": [JOY_AXIS_LEFT_X, 1.0],
 		"move_up": [JOY_AXIS_LEFT_Y, -1.0], "move_down": [JOY_AXIS_LEFT_Y, 1.0]}
 	for action: String in keys:
@@ -128,6 +130,10 @@ func _setup_input() -> void:
 			var jb := InputEventJoypadButton.new()
 			jb.button_index = pads[action]
 			InputMap.action_add_event(action, jb)
+		if wheel.has(action):
+			var mb := InputEventMouseButton.new()
+			mb.button_index = wheel[action]
+			InputMap.action_add_event(action, mb)
 		if axes.has(action):
 			var jm := InputEventJoypadMotion.new()
 			jm.axis = axes[action][0]

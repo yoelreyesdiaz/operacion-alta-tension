@@ -178,7 +178,7 @@ func _run() -> void:
 	await run_to_building(lv, leo, true)
 	check(lv.state == "fin" and lv.restarts == 1, "corriendo llega al edificio sin que lo alcancen")
 	await shot("fin")
-	check(await wait_until(func() -> bool: return scene_name() != "Zona02", 4.0), "transición al terminar")
+	check(await wait_until(func() -> bool: return scene_name() == "Edificio", 4.0), "entra al edificio")
 
 	print("test_cap2: %s" % ("OK" if fails == 0 else "%d FALLAS" % fails))
 	get_tree().quit(1 if fails else 0)

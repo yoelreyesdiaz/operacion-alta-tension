@@ -16,7 +16,8 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
   (45 s) → girar 7 nodos con ESPACIO para llevar la energía por el cable hasta el portón.
 - **Capítulo 2 — La cuadrilla (jugable):** entrada por el portón → cinemática de la descarga →
   carrera → cinemática del rayo (compañeros electrizados) → huida al edificio con SHIFT.
-  Guion en `data/cinematicas_cap2.json`. Siguiente: el interior del edificio.
+  Guion en `data/cinematicas_cap2.json`. Sigue el interior (`scenes/levels/edificio.tscn`): pasillo con
+  la puerta y el tablero TD-02 (más difícil, con tierras) → se abre y se ve todo el salón. Siguiente: qué pasa adentro.
 
 ## Estructura del repositorio
 | Carpeta | Contenido |
@@ -40,6 +41,8 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
    godot --headless -s tests/test_circuito_model.gd
    godot --headless res://tests/playthrough.tscn
    godot --headless res://tests/test_cap2.tscn
+   godot --headless res://tests/test_edificio.tscn
+   godot --headless res://tests/test_inventario.tscn
    ```
 4. Agrega una entrada en **`BITACORA.md`** con lo que hiciste.
 5. Sube tu rama y abre un **Pull Request** en GitHub para que el equipo lo revise antes de unirlo a `main`.

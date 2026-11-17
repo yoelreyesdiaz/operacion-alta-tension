@@ -3,6 +3,15 @@
 > Agrega tu entrada **arriba** (lo más reciente primero). Formato:
 > `## AAAA-MM-DD · Nombre` y luego viñetas: qué hiciste, qué falta, problemas.
 
+## 2026-11-05 · Sofía
+- Inventario siempre visible en todo el juego: barra de chaleco abajo a la izquierda con un
+  bolsillo numerado por herramienta, el nombre de la que está en la mano, y los fusibles y
+  documentos en cuanto se consiguen. La lámpara y el radio no salen porque siempre se traen.
+- Cambio de herramienta con `1` (multímetro), `2` (destornillador) y la rueda del mouse; Q/R
+  siguen funcionando. En el tablero, `1` y `2` conservan su función (energizar y medir), la
+  rueda sí cambia de herramienta y un indicador «MANO» muestra la que traes.
+- Prueba nueva: `tests/test_inventario.tscn` (teclas y rueda reales, también en el tablero).
+
 ## 2026-10-30 · Sofía
 - Capítulo 2 jugable (Zona 2, `scenes/levels/zona_02.tscn`), que reemplaza la cinemática anterior
   «El impacto del rayo». Secuencia: entrada por el portón del nivel 1 → zona A: cinemática 1
@@ -25,7 +34,14 @@
 - Se quitó la intro anterior: `cap2_impacto.tscn`, `cinematica_cap2.json`, `patio_noche.png`,
   `trabajador_cerca.png` y sus tomas en `shots.gd`.
 - Prueba nueva: `tests/test_cap2.tscn` (35 verificaciones, con persecución usando teclas reales).
-- Falta: qué pasa dentro del edificio (por ahora el nivel termina y vuelve al menú).
+- Interior del edificio (`scenes/levels/edificio.tscn`): al llegar a la puerta se entra a un pasillo
+  con la puerta, el tablero TD-02 y un gabinete. Mismo proceso que el portón: revisar la puerta →
+  destornillador en el tablero → medir, cambiar fusible, energizar y girar nodos → abrir. Al abrir se
+  destapa todo el salón con un recorrido de cámara. Por ahora el salón solo se recorre.
+- Tablero TD-02 (`data/puzzle_puerta.json`), más difícil que el TSA-01: 9×9, 12 nodos, 5 s por nodo
+  (TSA-01: 6.4) y 4 TIERRAS. Algunos nodos son piezas en T: si la tercera salida toca una tierra hay
+  corto, resta 5 s y no se resuelve hasta alejarla. `tablero_tsa.gd` ahora se configura con un JSON.
+- Falta: qué pasa dentro del edificio una vez abierto.
 
 ## 2026-10-27 · Sofía
 - Capítulo 2 — «El impacto del rayo»: cinemática de apertura. Al volver a la camioneta, un rayo

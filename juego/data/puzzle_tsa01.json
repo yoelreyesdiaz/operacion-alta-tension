@@ -1,9 +1,17 @@
 {
+  "id": "tsa01",
   "tamano": 7,
+  "celda": 24,
+  "origen": [52, 32],
   "semilla": 2210,
   "entrada": [0, 0],
   "salida": [6, 6],
   "tiempo": 45,
   "camino_minimo": 19,
-  "nodos": 7
+  "nodos": 7,
+  "titulo": "TSA-01 · RED AUXILIAR",
+  "meta": "PORTÓN",
+  "meta_frase": "el portón",
+  "red": "CIRCUITO A",
+  "fusibles_en": "el gabinete de la caseta"
 }

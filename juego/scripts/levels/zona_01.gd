@@ -358,7 +358,7 @@ func _use_tsa() -> void:
 	if Inventory.equipped != "destornillador":
 		AudioManager.play("error", -8.0)
 		if Inventory.has("destornillador"):
-			GameState.notify("Tapa atornillada: equipa el destornillador [Q/R].")
+			GameState.notify("Tapa atornillada: equipa el destornillador [2].")
 		else:
 			Radio.play("tsa_sin_herramienta")
 		return

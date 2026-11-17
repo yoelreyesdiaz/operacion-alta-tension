@@ -11,6 +11,8 @@ extends RefCounted
 ##    NODOS giratorios intercalados; todos empiezan girados para cortar la energía.
 ## 4. Si se acaba el tiempo, la protección dispara y el fusible se vuelve a fundir;
 ##    los nodos se quedan como estaban.
+## 5. Opcional ("derivaciones"): algunos nodos son piezas en T junto a una TIERRA. Si la
+##    energía la toca hay un corto: resta tiempo y no se resuelve hasta alejar la T.
 
 enum Fuse { DESCONOCIDO, FUNDIDO, NUEVO }
 enum Stage { MEDIR, CAMBIAR, LISTO, EN_CURSO, RESUELTO }
@@ -20,6 +22,8 @@ const N_BIT := 1
 const E_BIT := 2
 const S_BIT := 4
 const W_BIT := 8
+## Pasos de búsqueda por intento: en tableros grandes evita explorar callejones sin fin.
+const DFS_BUDGET := 20000
 const DIRS := [[N_BIT, 0, -1, S_BIT], [E_BIT, 1, 0, W_BIT], [S_BIT, 0, 1, N_BIT], [W_BIT, -1, 0, E_BIT]]
 
 var n := 7
@@ -36,6 +40,10 @@ var solved := false
 var time_total := 75.0
 var time_left := 75.0
 var trips := 0
+var faults := PackedInt32Array()
+var penalty := 0.0
+var _active_shorts: Array[int] = []
+var _dfs_budget := 0
 
 
 static func rot(mask: int, dir: int) -> int:
@@ -90,12 +98,21 @@ func generate(cfg: Dictionary) -> void:
 	fixed.fill(0)
 	for c: int in path:
 		fixed[c] = 1
+	faults.resize(0)
+	penalty = float(cfg.get("castigo", 0.0))
+	var pending := int(cfg.get("derivaciones", 0))
 	var count: int = min(int(cfg.get("nodos", 6)), path.size())
 	for j in count:
 		var k := int((j + 0.5) * path.size() / count)
 		var c: int = path[k]
 		fixed[c] = 0
 		var want := masks[c]
+		# Un nodo de cada dos, hasta completar las tierras.
+		if pending > 0 and j % 2 == 1:
+			var arm := _add_fault(c, rng)
+			if arm != 0:
+				masks[c] |= arm
+				pending -= 1
 		masks[c] = rot(masks[c], rng.randi_range(1, 3))
 		while masks[c] & want == want:
 			masks[c] = rot(masks[c], 1)
@@ -107,9 +124,28 @@ func generate(cfg: Dictionary) -> void:
 	trips = 0
 
 
+## Pone una TIERRA en una casilla vacía vecina al nodo. Devuelve el brazo que la toca (0 si no cabe).
+func _add_fault(c: int, rng: RandomNumberGenerator) -> int:
+	var opts: Array = []
+	for d: Array in DIRS:
+		var nx: int = c % n + d[1]
+		var ny: int = c / n + d[2]
+		if masks[c] & d[0] == 0 and nx >= 0 and ny >= 0 and nx < n and ny < n and masks[idx(nx, ny)] == 0:
+			opts.append(d)
+	if opts.is_empty():
+		return 0
+	var d: Array = opts[rng.randi_range(0, opts.size() - 1)]
+	var f := idx(c % n + d[1], c / n + d[2])
+	masks[f] = d[3]
+	fixed[f] = 1
+	faults.append(f)
+	return d[0]
+
+
 ## Camino simple y largo del banco a la salida (DFS aleatorio con semilla fija).
 func _find_path(rng: RandomNumberGenerator, min_len: int) -> Array[int]:
 	for attempt in 400:
+		_dfs_budget = DFS_BUDGET
 		var p: Array[int] = [entry_cell]
 		var seen := {entry_cell: true}
 		if _dfs(p, seen, rng, min_len, 0):
@@ -122,7 +158,8 @@ func _dfs(p: Array[int], seen: Dictionary, rng: RandomNumberGenerator, min_len: 
 	var c: int = p[-1]
 	if c == exit_cell:
 		return p.size() >= min_len
-	if depth > 60:
+	_dfs_budget -= 1
+	if depth > 60 or _dfs_budget < 0:
 		return false
 	var opts: Array = []
 	for d: Array in DIRS:
@@ -216,6 +253,19 @@ func start() -> Result:
 	return Result.OK
 
 
+func is_fault(i: int) -> bool:
+	return faults.has(i)
+
+
+## ¿Alguna TIERRA está recibiendo energía?
+func shorted() -> bool:
+	var d := distances()
+	for f: int in faults:
+		if d[f] >= 0:
+			return true
+	return false
+
+
 func has_piece(i: int) -> bool:
 	return masks[i] != 0
 
@@ -254,7 +304,8 @@ func progress() -> float:
 func tick(delta: float) -> String:
 	if not running:
 		return ""
-	if reaches_exit():
+	var hit := _update_shorts()
+	if reaches_exit() and _active_shorts.is_empty():
 		running = false
 		solved = true
 		return "resuelto"
@@ -263,13 +314,30 @@ func tick(delta: float) -> String:
 		running = false
 		fuse = Fuse.FUNDIDO
 		trips += 1
+		_active_shorts.clear()
 		return "disparo"
-	return ""
+	return "corto" if hit else ""
+
+
+## Cobra el castigo una vez por cada TIERRA que empieza a recibir energía.
+func _update_shorts() -> bool:
+	var d := distances()
+	var hit := false
+	var now: Array[int] = []
+	for f: int in faults:
+		if d[f] >= 0:
+			now.append(f)
+			if f not in _active_shorts:
+				hit = true
+				time_left = max(0.0, time_left - penalty)
+	_active_shorts = now
+	return hit
 
 
 func to_dict() -> Dictionary:
 	return {"n": n, "entry": entry_cell, "exit": exit_cell, "masks": Array(masks), "fixed": Array(fixed), "path": path,
-		"fuse": fuse, "solved": solved, "total": time_total, "trips": trips}
+		"fuse": fuse, "solved": solved, "total": time_total, "trips": trips,
+		"faults": Array(faults), "penalty": penalty}
 
 
 func from_dict(d: Dictionary) -> void:
@@ -286,4 +354,6 @@ func from_dict(d: Dictionary) -> void:
 	time_total = float(d["total"])
 	time_left = time_total
 	trips = int(d.get("trips", 0))
+	faults = PackedInt32Array(d.get("faults", []))
+	penalty = float(d.get("penalty", 0.0))
 	running = false
