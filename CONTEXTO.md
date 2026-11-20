@@ -17,7 +17,10 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
 - **Capítulo 2 — La cuadrilla (jugable):** entrada por el portón → cinemática de la descarga →
   carrera → cinemática del rayo (compañeros electrizados) → huida al edificio con SHIFT.
   Guion en `data/cinematicas_cap2.json`. Sigue el interior (`scenes/levels/edificio.tscn`): pasillo con
-  la puerta y el tablero TD-02 (más difícil, con tierras) → se abre y se ve todo el salón. Siguiente: qué pasa adentro.
+  la puerta y el tablero TD-02 físico (más difícil, con tierras) → cuarto de seguridad: encender el
+  edificio por zonas con carnadas, puerta blindada y cámaras en vivo → sala de control: maniobra contra
+  reloj (potencia, cuchillas, verificar, tierras) → ayudar a los 5 compañeros → victoria del Capítulo 2.
+  Regla para todo el juego: las acciones se hacen en el mundo con una animación de Leo (`Player.perform`).
 
 ## Estructura del repositorio
 | Carpeta | Contenido |
@@ -43,6 +46,10 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
    godot --headless res://tests/test_cap2.tscn
    godot --headless res://tests/test_edificio.tscn
    godot --headless res://tests/test_inventario.tscn
+   godot --headless -s tests/test_zonas_model.gd
+   godot --headless -s tests/test_mapa_cuartos.gd
+   godot --headless res://tests/test_camaras.tscn
+   godot --headless res://tests/test_final.tscn
    ```
 4. Agrega una entrada en **`BITACORA.md`** con lo que hiciste.
 5. Sube tu rama y abre un **Pull Request** en GitHub para que el equipo lo revise antes de unirlo a `main`.

@@ -59,6 +59,13 @@ func goto(scene: String) -> void:
 	Transition.fade_in()
 
 
+## Nivel donde sigue una partida cargada («Continuar»).
+func saved_level() -> String:
+	if Quest.chapter == 1:
+		return ZONA_01
+	return EDIFICIO if Quest.is_done("edificio") else CAP2
+
+
 func is_busy() -> bool:
 	return modal > 0
 
@@ -104,8 +111,7 @@ func _setup_input() -> void:
 		"move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN],
 		"interact": [KEY_E], "run": [KEY_SHIFT], "inventory": [KEY_TAB], "map": [KEY_M],
 		"tool_prev": [KEY_Q], "tool_next": [KEY_R], "tool_1": [KEY_1], "tool_2": [KEY_2], "pause": [KEY_ESCAPE],
-		"puzzle_rotate": [KEY_SPACE], "puzzle_start": [KEY_1], "puzzle_measure": [KEY_2],
-		"puzzle_fuse": [KEY_F],
+		"puzzle_rotate": [KEY_SPACE],
 	}
 	# Soporte de control preparado: mismas acciones, botones estándar.
 	var pads := {

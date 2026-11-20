@@ -19,17 +19,25 @@ const CAP2 := [
 	["tablero_puerta", "Abre el tablero TD-02 (pasillo)"],
 	["energia_puerta", "Lleva la energía a la puerta"],
 	["abrir_puerta", "Abre la puerta"],
-	["explorar", "Explora el edificio"],
+	["seguridad", "Enciende el edificio (cuarto de seguridad)"],
+	["zonas", "Enciende las 3 zonas obligatorias"],
+	["arranque", "Completa el arranque de la sala de control"],
+	["control", "Ve a la sala de control"],
+	["maniobra", "Maniobra: desenergiza y pon tierras"],
+	["rescate", "Ayuda a tus compañeros"],
 ]
 const CAPS := {1: CAP1, 2: CAP2}
 
 var chapter := 1
 var done: Array = []
+## Avance de un objetivo con conteo: id -> [hechos, total]. Se muestra como «(n/total)».
+var progress := {}
 
 
 func reset() -> void:
 	chapter = 1
 	done = []
+	progress = {}
 	changed.emit()
 
 
@@ -37,6 +45,7 @@ func reset() -> void:
 func start_chapter(n: int) -> void:
 	chapter = n
 	done = []
+	progress = {}
 	changed.emit()
 
 
@@ -44,6 +53,12 @@ func complete(id: String) -> void:
 	if id in done:
 		return
 	done.append(id)
+	changed.emit()
+
+
+## Fija el avance de un objetivo con conteo (p. ej. compañeros ayudados 2 de 5).
+func set_progress(id: String, n: int, total: int) -> void:
+	progress[id] = [n, total]
 	changed.emit()
 
 
@@ -61,15 +76,18 @@ func current_id() -> String:
 func current_text() -> String:
 	for o: Array in CAPS[chapter]:
 		if not o[0] in done:
+			if progress.has(o[0]):
+				return "%s (%d/%d)" % [o[1], progress[o[0]][0], progress[o[0]][1]]
 			return o[1]
 	return "Capítulo %d completado" % chapter
 
 
 func to_dict() -> Dictionary:
-	return {"chapter": chapter, "done": done}
+	return {"chapter": chapter, "done": done, "progress": progress}
 
 
 func from_dict(d: Dictionary) -> void:
 	chapter = int(d.get("chapter", 1))
 	done = d.get("done", [])
+	progress = d.get("progress", {})
 	changed.emit()

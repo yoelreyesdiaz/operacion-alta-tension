@@ -9,7 +9,7 @@ const SPR := "res://assets/sprites/%s.png"
 enum { GRAVA, GRAVA_B, ASFALTO, ASFALTO_L, CONCRETO, LOSETA, MURO, MALLA, CHARCO, FRANJA, LEJANA, BARDA }
 const SOLID := [MURO, MALLA, BARDA]
 const START := Vector2(246, 300)
-const PUZZLE := preload("res://scenes/puzzles/tablero_tsa.tscn")
+const TSA_FOOT := Vector2(376, 116)
 const PLAYER := preload("res://scenes/player/player.tscn")
 const HUD := preload("res://scenes/ui/hud.tscn")
 
@@ -18,7 +18,7 @@ var _entities: Node2D
 var _weather: Weather
 var _player: Player
 var _gate: StaticBody2D
-var _tsa: StaticBody2D
+var _tsa: TableroFisico
 var _beacons: Array[PointLight2D] = []
 var _lamps: Array = []
 var _cable_sprite: Sprite2D
@@ -219,8 +219,13 @@ func _build_props() -> void:
 	_interact(Vector2(136, 120), Vector2(16, 16), "Examinar diagrama", _use_diagram)
 
 	# Recinto TSA-01
-	_tsa = _prop("tsa_off", Vector2(376, 116), Vector2(14, 8))
-	_interact(Vector2(376, 120), Vector2(18, 14), "Revisar tablero TSA-01", _use_tsa)
+	_tsa = TableroFisico.new()
+	_tsa.config_path = "res://data/puzzle_tsa01.json"
+	_tsa.position = TSA_FOOT
+	_tsa.solved.connect(_on_puzzle_solved)
+	_tsa.tool_missing.connect(_on_tool_missing)
+	_tsa.first_open.connect(_on_tsa_open)
+	_entities.add_child(_tsa)
 	_prop("trafo", Vector2(448, 130), Vector2(30, 16))
 	_interact(Vector2(448, 134), Vector2(34, 14), "Examinar transformador", _use_trafo)
 	_prop("senal", Vector2(376, 190))
@@ -255,7 +260,7 @@ func _on_circuit(id: String, on: bool) -> void:
 
 
 func _apply_power(on: bool, instant: bool) -> void:
-	_tsa.get_node("Sprite").texture = load(SPR % ("tsa_on" if on else "tsa_off"))
+	_tsa.set_on(on)
 	_weather.set_ambient(Weather.LIT if on else Weather.DARK, 0.01 if instant else 1.5)
 	for pair: Array in _lamps:
 		if pair[0]:
@@ -351,23 +356,17 @@ func _use_trafo() -> void:
 		GameState.notify("TSP-1: con tensión de entrada, sin carga.")
 
 
-func _use_tsa() -> void:
-	if PowerGrid.is_on("A"):
-		GameState.notify("TSA-01 operando normal. Circuito A en línea.")
+func _on_tool_missing(tool: String) -> void:
+	if tool != "destornillador":
 		return
-	if Inventory.equipped != "destornillador":
-		AudioManager.play("error", -8.0)
-		if Inventory.has("destornillador"):
-			GameState.notify("Tapa atornillada: equipa el destornillador [2].")
-		else:
-			Radio.play("tsa_sin_herramienta")
-		return
-	_player.facing = "up"
-	AudioManager.play("girar")
-	var puzzle := PUZZLE.instantiate()
-	puzzle.solved.connect(_on_puzzle_solved)
-	puzzle.closed.connect(SaveSystem.save)
-	add_child(puzzle)
+	if Inventory.has("destornillador"):
+		GameState.notify("Tapa atornillada: equipa el destornillador [2].")
+	else:
+		Radio.play("tsa_sin_herramienta")
+
+
+func _on_tsa_open() -> void:
+	SaveSystem.save()
 	if _once("tsa_visto"):
 		Quest.complete("tablero")
 		Radio.play("tsa_primera")
@@ -375,6 +374,7 @@ func _use_tsa() -> void:
 
 func _on_puzzle_solved() -> void:
 	PowerGrid.set_circuit("A", true)
+	SaveSystem.save()
 	Quest.complete("fusibles")
 	Quest.complete("reparar")
 	await get_tree().create_timer(0.6).timeout

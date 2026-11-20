@@ -1,9 +1,10 @@
 extends CanvasLayer
-## Tablero eléctrico: medir el fusible, cambiarlo, energizar y, contra reloj, girar los
-## nodos para llevar la energía del banco hasta la salida. Lo define un JSON (config_path):
-## TSA-01 para el portón del Capítulo 1 y TD-02, con tierras, para la puerta del edificio.
-## Teclado: WASD/flechas cursor · ESPACIO/E girar · 2 medir · F fusible ·
-## 1 energizar · Q/R herramienta · ESC cerrar. Ratón: clic izq/der gira, rueda herramienta.
+## Pantalla de nodos del tablero eléctrico. Los pasos físicos (tapa, medir, fusible y palanca)
+## se hacen en el mundo con `TableroFisico`, que abre esta pantalla ya energizada e inyecta su
+## `model`. Aquí, contra reloj, se giran los nodos para llevar la energía del banco a la salida.
+## Lo define un JSON (config_path): TSA-01 (portón) y TD-02, con tierras (puerta del edificio).
+## Teclado: WASD/flechas cursor · ESPACIO/E girar · 1/2 Q/R herramienta · ESC cerrar.
+## Ratón: clic izq/der gira, rueda herramienta.
 
 signal closed
 signal solved
@@ -15,10 +16,12 @@ const C_RIM := Color("5d6779")
 const C_HOUSING := Color("1c2029")
 const FLOW_SPEED := 9.0  # nodos por segundo que avanza el frente de energía
 const GS := preload("res://autoload/game_state.gd")
+## Tiempo que se ve el mensaje de disparo antes de cerrarse sola.
+const TRIP_CLOSE := 1.5
 
-## Se asigna antes de agregar el tablero a la escena.
+## Se asignan antes de agregar el tablero a la escena. Sin `model` se carga o genera uno.
 var config_path := "res://data/puzzle_tsa01.json"
-var model := CircuitoModel.new()
+var model: CircuitoModel
 var _cfg: Dictionary
 var _id := ""
 var _cell := 24
@@ -33,9 +36,6 @@ var _flow := 0.0
 var _t := 0.0
 var _last_second := -1
 var _finishing := false
-var _btn_measure: Button
-var _btn_fuse: Button
-var _btn_start: Button
 var _icons: Texture2D
 var _pcb: Texture2D
 
@@ -48,12 +48,13 @@ func _ready() -> void:
 	_id = _cfg["id"]
 	_cell = int(_cfg["celda"])
 	_origin = Vector2(_cfg["origen"][0], _cfg["origen"][1])
-	if GameState.puzzles.has(_id):
-		model.from_dict(GameState.puzzles[_id])
-	else:
-		model.generate(_cfg)
+	if model == null:
+		model = CircuitoModel.new()
+		if GameState.puzzles.has(_id):
+			model.from_dict(GameState.puzzles[_id])
+		else:
+			model.generate(_cfg)
 	GameState.modal += 1
-	Inventory.changed.connect(_refresh)
 	var first: int = model.nodes()[0]
 	cursor = Vector2i(first % model.n, first / model.n)
 
@@ -63,43 +64,28 @@ func _ready() -> void:
 	_view.gui_input.connect(_on_view_input)
 	add_child(_view)
 
-	_btn_measure = _button("[2] MEDIR FUSIBLE", Vector2(PANEL_X, 140), _measure)
-	_btn_fuse = _button("", Vector2(PANEL_X, 157), _replace_fuse)
-	_btn_start = _button("[1] ENERGIZAR", Vector2(PANEL_X, 174), _start)
-	_button("[ESC] CERRAR", Vector2(PANEL_X, 191), close)
 	_intro_message()
-	_refresh()
-
-
-func _button(text: String, pos: Vector2, action: Callable) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.position = pos
-	b.size = Vector2(136, 15)
-	b.focus_mode = Control.FOCUS_NONE
-	b.pressed.connect(action)
-	_view.add_child(b)
-	return b
 
 
 func _intro_message() -> void:
-	match model.stage():
-		CircuitoModel.Stage.MEDIR:
-			_say("Paso 1: equipa el MULTÍMETRO [RUEDA] y mide el fusible [2].", GS.C_YELLOW)
-		CircuitoModel.Stage.CAMBIAR:
-			_say("Paso 2: el fusible está abierto. Cámbialo por uno nuevo [F].", GS.C_YELLOW)
-		CircuitoModel.Stage.LISTO:
-			_say("Paso 3: energiza [1]. En cuanto lo hagas, corre el tiempo.", GS.C_YELLOW)
-		CircuitoModel.Stage.RESUELTO:
-			_say("%s en línea. %s ya tiene energía." % [_cfg["red"], _cfg["meta_frase"].capitalize()], GS.C_GREEN)
+	if model.solved:
+		_say("%s en línea. %s ya tiene energía." % [_cfg["red"], _cfg["meta_frase"].capitalize()], GS.C_GREEN)
+	elif model.running:
+		_energized()
+	else:
+		_say("Sin energía. Energiza con la palanca del tablero.", GS.C_DIM)
 
 
-func _refresh() -> void:
-	var st := model.stage()
-	_btn_fuse.text = "[F] CAMBIAR FUSIBLE"
-	_btn_measure.disabled = st != CircuitoModel.Stage.MEDIR
-	_btn_fuse.disabled = st != CircuitoModel.Stage.CAMBIAR
-	_btn_start.disabled = st != CircuitoModel.Stage.LISTO
+## Efectos al abrir con la red recién energizada por la palanca.
+func _energized() -> void:
+	AudioManager.loop("zumbido", -18.0)
+	_flash = 0.25
+	_flash_color = GS.C_BLUE
+	_last_second = -1
+	if model.faults.is_empty():
+		_say("¡Red energizada! Gira los nodos [ESPACIO] hasta el %s." % _cfg["meta"], GS.C_BLUE)
+	else:
+		_say("¡Red energizada! Llega a la %s sin tocar las TIERRAS." % _cfg["meta"], GS.C_BLUE)
 
 
 func _say(text: String, color := GS.C_TEXT) -> void:
@@ -160,12 +146,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		Inventory.cycle(-1)
 	elif event.is_action_pressed("tool_next"):
 		Inventory.cycle(1)
-	elif event.is_action_pressed("puzzle_measure"):
-		_measure()
-	elif event.is_action_pressed("puzzle_fuse"):
-		_replace_fuse()
-	elif event.is_action_pressed("puzzle_start"):
-		_start()
+	elif event.is_action_pressed("tool_1"):
+		Inventory.equip_slot(0)
+	elif event.is_action_pressed("tool_2"):
+		Inventory.equip_slot(1)
 	else:
 		handled = event.is_action_type()
 	if handled:
@@ -227,49 +211,6 @@ func _rotate(dir: int) -> void:
 				AudioManager.play("error", -10.0)
 
 
-func _measure() -> void:
-	if model.stage() != CircuitoModel.Stage.MEDIR:
-		return
-	if model.measure_fuse(Inventory.equipped == "multimetro") == CircuitoModel.Result.NEED_METER:
-		_say("Para medir necesitas el MULTÍMETRO en la mano [RUEDA].", GS.C_YELLOW)
-		AudioManager.play("error", -8.0)
-		return
-	AudioManager.play("click")
-	_say("Multímetro: ∞ Ω. Fusible principal ABIERTO. Cámbialo [F].", GS.C_ORANGE)
-	_refresh()
-	if not GameState.flags.get("fusible_medido", false):
-		GameState.flags["fusible_medido"] = true
-		Radio.play("fusible_abierto")
-
-
-func _replace_fuse() -> void:
-	if model.stage() != CircuitoModel.Stage.CAMBIAR:
-		return
-	if model.replace_fuse(Inventory.has("fusible")) == CircuitoModel.Result.NEED_FUSE:
-		_say("No traes fusibles. Hay en %s." % _cfg["fusibles_en"], GS.C_YELLOW)
-		AudioManager.play("error", -8.0)
-		return
-	Inventory.remove("fusible")
-	AudioManager.play("fusible")
-	_say("Fusible nuevo colocado: 0.1 Ω. Listo para energizar [1].", GS.C_GREEN)
-	_refresh()
-
-
-func _start() -> void:
-	if model.start() != CircuitoModel.Result.OK:
-		return
-	AudioManager.play("interruptor")
-	AudioManager.loop("zumbido", -18.0)
-	_flash = 0.25
-	_flash_color = GS.C_BLUE
-	_last_second = -1
-	if model.faults.is_empty():
-		_say("¡Red energizada! Gira los nodos [ESPACIO] hasta el %s." % _cfg["meta"], GS.C_BLUE)
-	else:
-		_say("¡Red energizada! Llega a la %s sin tocar las TIERRAS." % _cfg["meta"], GS.C_BLUE)
-	_refresh()
-
-
 func _trip() -> void:
 	GameState.stats["disparos"] += 1
 	AudioManager.play("alarma")
@@ -277,11 +218,12 @@ func _trip() -> void:
 	AudioManager.fade_loop("zumbido", -60.0, 0.3)
 	_flash = 0.4
 	_flash_color = GS.C_RED
-	_say("¡DISPARO! Se acabó el tiempo y el fusible se fundió. Cámbialo [F].", GS.C_RED)
-	_refresh()
-	if not GameState.flags.get("primer_disparo", false):
-		GameState.flags["primer_disparo"] = true
-		Radio.play("disparo")
+	_say("¡DISPARO! Se acabó el tiempo y el fusible se fundió. Cámbialo en el tablero.", GS.C_RED)
+	GameState.puzzles[_id] = model.to_dict()
+	_finishing = true
+	await get_tree().create_timer(TRIP_CLOSE).timeout
+	_finishing = false
+	close()
 
 
 ## La energía tocó una TIERRA: cuesta tiempo y no se resuelve hasta alejar esa T.
@@ -304,7 +246,6 @@ func _win() -> void:
 	_say("%s ENERGIZADA. ¡La energía llegó a %s!" % [_cfg["red"], _cfg["meta_frase"]], GS.C_GREEN)
 	AudioManager.play("energia")
 	GameState.puzzles[_id] = model.to_dict()
-	_refresh()
 	await get_tree().create_timer(1.8).timeout
 	AudioManager.play("exito")
 	await get_tree().create_timer(1.2).timeout
@@ -412,7 +353,7 @@ func _draw_view() -> void:
 	_brackets(v, Rect2(cp, Vector2.ONE * _cell), GS.C_YELLOW if int(_t * 4) % 2 == 0 else Color.WHITE)
 
 	_draw_panel(v, font)
-	v.draw_string(font, Vector2(52, 214), "ESPACIO GIRA · WASD CAMBIA NODO", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_LINE)
+	v.draw_string(font, Vector2(52, 214), "ESPACIO GIRA · WASD NODO · 1/2 HERRAMIENTA", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_LINE)
 	v.draw_rect(Rect2(0, 222, 426, 18), Color(GS.C_BG, 0.92))
 	v.draw_rect(Rect2(0, 222, 426, 1), GS.C_LINE)
 	v.draw_string(font, Vector2(8, 234), _msg, HORIZONTAL_ALIGNMENT_LEFT, 410, 12, _msg_color)
@@ -510,19 +451,6 @@ func _draw_panel(v: Control, font: Font) -> void:
 	v.draw_rect(Rect2(x, 51, 136, 14), Color("101810"))
 	v.draw_rect(Rect2(x, 51, 136, 14), rc, false, 1.0)
 	v.draw_string(font, Vector2(x + 4, 62), reading, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, rc)
-
-	# Pasos
-	var steps := ["MEDIR FUSIBLE", "CAMBIAR FUSIBLE", "ENERGIZAR", "GIRAR NODOS"]
-	var keys := ["2", "F", "1", "ESP"]
-	var st := int(model.stage())
-	for k in 4:
-		var y := 78 + k * 11
-		var done := st > k
-		var cur := st == k
-		var col := GS.C_GREEN if done else (GS.C_YELLOW if cur else GS.C_LINE)
-		var mark := "✓" if done else (">" if cur and int(_t * 3) % 2 == 0 else " ")
-		v.draw_string(font, Vector2(x, y), "%s %s" % [mark, steps[k]], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
-		v.draw_string(font, Vector2(x + 136 - keys[k].length() * 6, y), keys[k], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
 
 	# Avance
 	var prog := model.progress() if model.running or model.solved else 0.0

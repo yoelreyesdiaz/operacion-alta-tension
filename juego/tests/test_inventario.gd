@@ -99,6 +99,12 @@ func _run() -> void:
 	var lv: Node = get_tree().current_scene
 	var leo: Player = get_tree().get_first_node_in_group("player")
 
+	# Medir, fusible y energizar ya son acciones físicas: no quedan teclas ni ayuda vieja
+	for a: String in ["puzzle_start", "puzzle_measure", "puzzle_fuse"]:
+		check(not InputMap.has_action(a), "sin la tecla vieja %s" % a)
+	check(not UIKit.CONTROLES.contains("Medir fusible") and not UIKit.CONTROLES.contains("Energizar"),
+		"la ayuda de controles ya no lista teclas de medir/fusible/energizar")
+
 	# Sin herramientas no hay nada que elegir
 	await shot("sin_herramientas")
 	await key(KEY_1)
@@ -160,42 +166,42 @@ func _run() -> void:
 	await shot("barra_multimetro")
 	check(Inventory.equipped == "multimetro", "los demás objetos no alteran los números")
 
-	# Tablero: el 1 y el 2 conservan su función; la rueda sí cambia de herramienta
+	# Tablero físico: tapa, medir, fusible y palanca en el mundo; luego la pantalla de nodos
 	await use_at(leo, lv.DOOR_FOOT + Vector2(0, 12))
 	await skip_radio()
+	var tb: TableroFisico = lv._board
 	Inventory.equip("destornillador")
-	await use_at(leo, lv.BOARD_FOOT + Vector2(0, 12))
-	await wait(0.2)
+	await use_at(leo, tb.spot("tapa"))
+	await wait(1.2)
+	await skip_radio()
+	Inventory.equip("multimetro")
+	for k in 2:  # medir y cambiar el fusible
+		await use_at(leo, tb.spot("fusible"))
+		await wait(1.2)
+		await skip_radio()
+	await use_at(leo, tb.spot("palanca"))
+	await wait(1.0)
 	var pz: Node = lv.get_node_or_null("TableroTSA")
-	check(pz != null, "abre el tablero")
+	check(pz != null, "la palanca abre la pantalla de nodos")
 	await skip_radio()
 	var m: CircuitoModel = pz.model
+	check(m.running, "la pantalla abre ya energizada")
+	var mask := m.masks.duplicate()
 
+	# Dentro de la pantalla, el 1 y el 2 vuelven a ser herramientas
 	await key(KEY_2)
-	check(Inventory.equipped == "destornillador", "en el tablero, el 2 no equipa")
-	check(m.stage() == CircuitoModel.Stage.MEDIR, "sin multímetro en la mano el 2 no mide")
+	check(Inventory.equipped == "destornillador", "en la pantalla de nodos, el 2 equipa el destornillador")
 	await shot("tablero_destornillador")
+	await key(KEY_1)
+	check(Inventory.equipped == "multimetro", "en la pantalla de nodos, el 1 equipa el multímetro")
+	await shot("tablero_multimetro")
+	check(m.masks == mask and m.running, "los números no giran nodos")
 
 	var celda: Vector2 = pz._cell_center(m.nodes()[0])
 	await wheel(MOUSE_BUTTON_WHEEL_DOWN, celda)
-	check(Inventory.equipped == "multimetro", "la rueda cambia de herramienta sobre los nodos")
-	check(not m.running, "la rueda no gira nodos ni energiza")
-	await shot("tablero_multimetro")
-	await wheel(MOUSE_BUTTON_WHEEL_DOWN, pz._btn_measure.position + Vector2(10, 7))
-	check(Inventory.equipped == "destornillador", "la rueda cambia de herramienta sobre los botones")
+	check(Inventory.equipped == "destornillador", "la rueda cambia de herramienta sobre los nodos")
 	await wheel(MOUSE_BUTTON_WHEEL_UP, Vector2(4, 4))
 	check(Inventory.equipped == "multimetro", "la rueda cambia de herramienta fuera de los nodos")
-
-	await key(KEY_2)
-	check(m.stage() == CircuitoModel.Stage.CAMBIAR, "con el multímetro, el 2 mide")
-	await skip_radio()
-	await press("puzzle_fuse")
-	await key(KEY_1)
-	check(m.running, "en el tablero, el 1 energiza")
-	check(Inventory.equipped == "multimetro", "energizar no cambia la herramienta")
-	var mask := m.masks.duplicate()
-	await wheel(MOUSE_BUTTON_WHEEL_DOWN, celda)
-	check(Inventory.equipped == "destornillador", "la rueda también funciona con la red energizada")
 	check(m.masks == mask, "la rueda nunca gira un nodo")
 
 	print("test_inventario: %s" % ("OK" if fails == 0 else "%d FALLAS" % fails))

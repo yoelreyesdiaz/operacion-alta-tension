@@ -3,6 +3,28 @@
 > Agrega tu entrada **arriba** (lo más reciente primero). Formato:
 > `## AAAA-MM-DD · Nombre` y luego viñetas: qué hiciste, qué falta, problemas.
 
+## 2026-11-19 · Sofía
+- Acciones físicas en todo el juego: `Player.perform(anim, tiempo, cara)` y animaciones nuevas de Leo
+  (palanca, medir, fusible, sentado, botón, ayudar). Los tableros TSA-01 y TD-02 son físicos
+  (`TableroFisico`): tapa con destornillador, medir y cambiar el fusible y bajar la palanca en el
+  mundo; la pantalla de nodos abre ya energizada y `1`/`2` vuelven a cambiar de herramienta.
+- Edificio con cuartos y puertas (`edificio_mapa.gd`). Cuarto de seguridad: tablero de 8 zonas con
+  medidor de kW (`ZonasModel`, capacidad 12 kW, arranque de 25 s), interruptor principal, puerta
+  blindada con botón, 6 monitores en vivo y la consola con la vista 2×3 (`CamaraFeed`,
+  `CamaraMonitor`, `ConsolaCamaras`). Los compañeros electrizados entran por el acceso y van tras
+  la luz (carnadas) o, sin carnada, al cuarto de seguridad; se mueven por las puertas (`MapaCuartos`).
+- Final del Capítulo 2: en la sala de control, maniobra contra reloj de 90 s (potencia, cuchillas,
+  verificar ausencia de tensión, tierras); fuera de orden cuesta 10 s. Con las tierras los 5 se
+  descargan; Leo ayuda a cada uno a levantarse y aparece la victoria del Capítulo 2.
+- Revisión: los compañeros ya no atraviesan muros cuando Leo cambia de cuarto (recalculan la ruta
+  por las puertas); si alcanzan a Leo a media acción, el interruptor/principal/botón no se aplica
+  después del reinicio; se quitaron las teclas viejas del tablero (medir/fusible/energizar) y la
+  ayuda de controles; textos de radio corregidos (todo está en la pared norte del cuarto).
+- Pruebas nuevas: `test_zonas_model`, `test_mapa_cuartos`, `test_camaras`, `test_final`; se
+  actualizaron `playthrough`, `test_edificio` y `test_inventario`.
+- Falta: probar a mano la dificultad del puzzle de zonas; «Guardar y salir» en el Capítulo 2 y luego
+  «Continuar» regresa al nivel 1 (viene de antes, el guardado no recuerda el nivel).
+
 ## 2026-11-05 · Sofía
 - Inventario siempre visible en todo el juego: barra de chaleco abajo a la izquierda con un
   bolsillo numerado por herramienta, el nombre de la que está en la mano, y los fusibles y

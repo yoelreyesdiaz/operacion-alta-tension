@@ -10,6 +10,8 @@ const FW := 20
 const FH := 24
 
 var facing := "down"
+## True mientras Leo hace una acción física (perform): no camina ni interactúa.
+var performing := false
 var focus: Interactable
 var _sprite: AnimatedSprite2D
 var _detector: Area2D
@@ -85,6 +87,9 @@ func _build_frames() -> SpriteFrames:
 		"walk_side": [2, [0, 1, 2, 3], 7.0, true], "idle_side": [2, [0], 1.0, true],
 		"repair": [3, [0, 1], 6.0, true], "radio": [3, [2, 3], 3.0, true],
 		"hurt": [4, [0, 1], 14.0, true],
+		"palanca": [5, [0, 1, 2, 3], 8.0, false], "medir": [6, [0, 1], 4.0, true],
+		"fusible": [6, [2, 3], 4.0, true], "sentado": [7, [0, 1], 3.0, true],
+		"boton": [7, [2, 3], 6.0, false], "ayudar": [8, [0, 1], 4.0, true],
 	}
 	for anim: String in defs:
 		var d: Array = defs[anim]
@@ -103,6 +108,9 @@ func _physics_process(delta: float) -> void:
 	GameState.player_pos = global_position
 	_invuln = max(0.0, _invuln - delta)
 	_update_focus()
+	if performing:
+		velocity = Vector2.ZERO
+		return
 	if _action_time > 0.0:
 		_action_time -= delta
 		velocity = velocity.move_toward(Vector2.ZERO, 400.0 * delta)
@@ -157,7 +165,7 @@ func _update_focus() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if GameState.is_busy() or _action_time > 0.0:
+	if GameState.is_busy() or _action_time > 0.0 or performing:
 		return
 	if event.is_action_pressed("interact") and focus:
 		get_viewport().set_input_as_handled()
@@ -171,6 +179,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		Inventory.equip_slot(0)
 	elif event.is_action_pressed("tool_2"):
 		Inventory.equip_slot(1)
+
+
+## Acción física en el mundo: Leo se voltea hacia `face`, reproduce `anim` y se queda
+## quieto `time` segundos (sin moverse ni interactuar). El mundo sigue corriendo.
+func perform(anim: String, time: float, face := "up") -> void:
+	if performing:
+		return
+	performing = true
+	velocity = Vector2.ZERO
+	facing = face
+	_sprite.speed_scale = 1.0
+	_sprite.flip_h = face == "left"
+	_sprite.play(anim if _sprite.sprite_frames.has_animation(anim) else "repair")
+	await get_tree().create_timer(time, false).timeout
+	performing = false
+	_sprite.play(_anim("idle"))
 
 
 ## Descarga eléctrica: daño, empujón y parpadeo. Ignorada durante la invulnerabilidad.

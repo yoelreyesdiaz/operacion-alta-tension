@@ -51,4 +51,4 @@ static func hud(node: Node) -> Node:
 	return node.get_tree().get_first_node_in_group("hud")
 
 
-const CONTROLES := "WASD / flechas .... Moverse\nSHIFT ............. Correr\nE ................. Interactuar\n1, 2, rueda, Q/R .. Cambiar herramienta\nTAB ............... Inventario\nM ................. Mapa\nESC ............... Pausa\n\nEN EL TABLERO\n2 ................. Medir fusible\nF ................. Cambiar fusible\n1 ................. Energizar\nESPACIO / clic .... Girar nodo"
+const CONTROLES := "WASD / flechas .... Moverse\nSHIFT ............. Correr\nE ................. Interactuar\n1, 2, rueda, Q/R .. Cambiar herramienta\nTAB ............... Inventario\nM ................. Mapa\nESC ............... Pausa\n\nEN EL TABLERO (pantalla de nodos)\nESPACIO / clic .... Girar nodo\nWASD / flechas .... Elegir nodo"
