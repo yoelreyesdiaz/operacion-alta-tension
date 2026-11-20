@@ -160,6 +160,118 @@ def leo(direction, phase=0, action=""):
     return outline(frame)
 
 
+def back_body(im, o, sit=False):
+    """Leo de espaldas sin brazos; o baja todo el torso (agacharse o sentarse)."""
+    if sit:
+        rect(im, 4, 14 + o, 11, 15 + o, NV)
+    else:
+        leg(im, 5, 7, 0)
+        leg(im, 8, 10, 0)
+    rect(im, 4, 8 + o, 11, 13 + o, KH)
+    rect(im, 4, 13 + o, 11, 13 + o, BT)
+    rect(im, 5, 8 + o, 10, 12 + o, DG)
+    rect(im, 5, 8 + o, 10, 8 + o, MG)
+    rect(im, 7, 10 + o, 8, 10 + o, Y)
+    rect(im, 5, 5 + o, 10, 6 + o, HAIR)
+    rect(im, 6, 7 + o, 9, 7 + o, SKD)
+    helmet(im, o, front=False)
+
+
+def arm_up(im, x, hand, shoulder=9):
+    """Brazo levantado: manga de hand+1 al hombro y guante en hand."""
+    rect(im, x, hand + 1, x, shoulder, KHD)
+    px(im, x, hand, Y)
+
+
+def arm_rest(im, x, o=0):
+    rect(im, x, 8 + o, x, 11 + o, KHD)
+    px(im, x, 12 + o, Y)
+
+
+def leo_act(action, phase):
+    """Animaciones de acción (filas 5-8 de leo.png)."""
+    im = new(16, 20)
+    if action == "palanca":  # de espaldas: sube los brazos, toma la palanca y la baja
+        hand = (0, 3, 7, 10)[phase]
+        o = (0, 0, 1, 1)[phase]
+        rect(im, 1, hand, 14, hand, LG)  # mango de la palanca, detrás de Leo
+        px(im, 1, hand, MG)
+        px(im, 14, hand, MG)
+        back_body(im, o)
+        arm_up(im, 3, hand, 9 + o)
+        arm_up(im, 12, hand, 9 + o)
+        if hand > 9 + o:
+            rect(im, 3, 9 + o, 3, hand - 1, KHD)
+            rect(im, 12, 9 + o, 12, hand - 1, KHD)
+    elif action == "medir":  # puntas del multímetro en el tablero
+        back_body(im, 0)
+        hand = 5 - phase
+        arm_up(im, 3, hand)
+        arm_up(im, 12, hand + phase)
+        rect(im, 3, hand - 2, 3, hand - 1, LG)  # punta negra
+        px(im, 3, hand - 3, K2)
+        rect(im, 12, hand + phase - 2, 12, hand + phase - 1, LG)  # punta roja
+        px(im, 12, hand + phase - 3, RD)
+        rect(im, 12, 10, 13, 13, Y)  # multímetro en el cinturón
+        px(im, 12, 11, GR if phase else WH)
+        px(im, 13, 11, GR if phase else WH)
+    elif action == "fusible":  # mete un fusible en el portafusibles
+        back_body(im, 0)
+        arm_up(im, 3, 6)
+        hand = 5 - phase
+        arm_up(im, 12, hand)
+        top = hand - 3
+        px(im, 12, top, LG)
+        rect(im, 12, top + 1, 12, top + 2, h(0xD9D2B8))
+        px(im, 13, top + 1, OR)
+        px(im, 13, top + 2, OR)
+    elif action == "sentado":  # sentado de espaldas, tecleando
+        o = 3
+        back_body(im, o, sit=True)
+        lh, rh = (9, 10) if phase == 0 else (10, 9)
+        arm_up(im, 3, lh, 11 + o)
+        arm_up(im, 12, rh, 11 + o)
+    elif action == "boton":  # estira el brazo y presiona
+        back_body(im, 0)
+        arm_rest(im, 3)
+        for x, y in ((12, 9), (12, 8), (13, 7), (13, 6)):
+            px(im, x, y, KHD)
+        if phase:
+            px(im, 14, 5, KHD)
+            px(im, 14, 4, Y)
+            px(im, 15, 4, Y)
+        else:
+            px(im, 14, 5, Y)
+    elif action == "ayudar":  # de frente, agachado tendiendo la mano
+        o = 3
+        rect(im, 4, 17, 6, 18, NV)
+        rect(im, 9, 17, 11, 18, NV)
+        rect(im, 3, 19, 6, 19, BT)
+        rect(im, 9, 19, 12, 19, BT)
+        rect(im, 4, 8 + o, 11, 13 + o, KH)
+        rect(im, 5, 8 + o, 6, 12 + o, OR)
+        rect(im, 9, 8 + o, 10, 12 + o, OR)
+        rect(im, 5, 11 + o, 6, 11 + o, YL)
+        rect(im, 9, 11 + o, 10, 11 + o, YL)
+        rect(im, 4, 13 + o, 11, 13 + o, BT)
+        rect(im, 3, 8 + o, 3, 12 + o, KHD)  # brazo en la rodilla
+        px(im, 3, 13 + o, Y)
+        reach = ((12, 11), (12, 12), (13, 13), (13, 14)) if phase == 0 else ((12, 11), (13, 12), (14, 13))
+        for x, y in reach:
+            px(im, x, y, KHD)
+        hx, hy = (14, 15) if phase == 0 else (15, 14)
+        px(im, hx, hy, Y)
+        px(im, hx, hy - 1, Y)
+        rect(im, 5, 5 + o, 10, 7 + o, SK)
+        rect(im, 5, 7 + o, 10, 7 + o, SKD)
+        px(im, 6, 6 + o, K)
+        px(im, 9, 6 + o, K)
+        helmet(im, o)
+    frame = new(FW, FH)
+    frame.paste(im, (2, 2))
+    return outline(frame)
+
+
 def tint(im, c):
     out = im.copy()
     for y in range(im.height):
@@ -171,7 +283,7 @@ def tint(im, c):
 
 
 def leo_sheet():
-    sheet = new(FW * 4, FH * 5)
+    sheet = new(FW * 4, FH * 9)
     for row, d in enumerate(("down", "up", "right")):
         for f in range(4):
             sheet.paste(leo(d, f), (f * FW, row * FH))
@@ -181,6 +293,14 @@ def leo_sheet():
     base = leo("down", 0)
     sheet.paste(tint(base, WH), (0, 4 * FH))
     sheet.paste(tint(base, RD), (FW, 4 * FH))
+    for f in range(4):
+        sheet.paste(leo_act("palanca", f), (f * FW, 5 * FH))
+    for f in range(2):
+        sheet.paste(leo_act("medir", f), (f * FW, 6 * FH))
+        sheet.paste(leo_act("fusible", f), ((2 + f) * FW, 6 * FH))
+        sheet.paste(leo_act("sentado", f), (f * FW, 7 * FH))
+        sheet.paste(leo_act("boton", f), ((2 + f) * FW, 7 * FH))
+        sheet.paste(leo_act("ayudar", f), (f * FW, 8 * FH))
     save(sheet, "sprites", "leo.png")
 
 

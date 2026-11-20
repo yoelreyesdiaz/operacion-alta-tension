@@ -1,0 +1,162 @@
+{
+  "puerta_sin_energia": [
+    [
+      "Leo",
+      "Inge, entré al edificio, pero estoy encerrado en un pasillo. La puerta interior es eléctrica y no tiene energía."
+    ],
+    [
+      "Ing. Morales",
+      "Debe haber un tablero ahí mismo, el TD-02. Y un gabinete con refacciones. Es lo mismo que el portón."
+    ]
+  ],
+  "td02_primera": [
+    [
+      "Ing. Morales",
+      "Cuidado: el TD-02 tiene más nodos y unas derivaciones a tierra, las marcas rojas."
+    ],
+    [
+      "Ing. Morales",
+      "Hay piezas en T. Si la tercera salida apunta a una tierra, hace corto, pierdes tiempo y la energía no pasa."
+    ]
+  ],
+  "puerta_energia": [
+    [
+      "Leo",
+      "Luz verde en la puerta. Ya tiene energía."
+    ]
+  ],
+  "edificio_oscuro": [
+    [
+      "Leo",
+      "Inge, ya abrí. Del otro lado está el cuarto de seguridad, pero todo el edificio sigue a oscuras."
+    ],
+    [
+      "Ing. Morales",
+      "Desde ese cuarto se enciende el edificio por zonas. Entra y revisa los monitores."
+    ]
+  ],
+  "presentacion": [
+    [
+      "Leo",
+      "¡Inge! En la cámara del acceso principal... son ellos. Forzaron la puerta y ya están adentro."
+    ],
+    [
+      "Ing. Morales",
+      "Siguen cargados, Leo. Van tras lo que tiene energía: luz, ruido, equipo funcionando."
+    ],
+    [
+      "Ing. Morales",
+      "Úsalo a tu favor: enciende un cuarto lejos de ti y se irán hacia allá. Es tu carnada."
+    ],
+    [
+      "Ing. Morales",
+      "Para arrancar la sala de control necesito pasillo norte, sala de control y servicios encendidos 25 segundos."
+    ],
+    [
+      "Ing. Morales",
+      "Ojo: el tablero aguanta 12 kW. La puerta blindada también consume mientras está cerrada."
+    ],
+    [
+      "Leo",
+      "Entendido. Cámaras en la consola, tablero de zonas al este y el principal al oeste."
+    ]
+  ],
+  "obligatorias": [
+    [
+      "Ing. Morales",
+      "Veo el arranque avanzando en mi pantalla. Mantén esas tres zonas, Leo."
+    ]
+  ],
+  "sobrecarga": [
+    [
+      "Ing. Morales",
+      "¡Se botó el principal! Baja carga en el tablero y luego rearma el principal, al otro extremo del cuarto."
+    ]
+  ],
+  "atrapado": [
+    [
+      "Ing. Morales",
+      "¡Leo! ¿Estás bien?"
+    ],
+    [
+      "Leo",
+      "Me alcanzó uno... la descarga botó todo. Hay que empezar el arranque de nuevo."
+    ]
+  ],
+  "arranque_completo": [
+    [
+      "Ing. Morales",
+      "¡Arrancó la sala de control! Su puerta ya se abrió, está al norte del vestíbulo."
+    ],
+    [
+      "Leo",
+      "Voy para allá."
+    ]
+  ],
+  "maniobra_inicio": [
+    [
+      "Leo",
+      "Inge, ya estoy en la sala de control. La puerta se cerró detrás de mí."
+    ],
+    [
+      "Ing. Morales",
+      "Bien, ahí no pueden entrar. Escucha: el transformador sigue energizado y eso los mantiene cargados."
+    ],
+    [
+      "Ing. Morales",
+      "Hay que desenergizar y aterrizar. Primero abre el interruptor de potencia y luego las cuchillas."
+    ],
+    [
+      "Ing. Morales",
+      "Después verifica ausencia de tensión con el multímetro en la mano. Al final colocas las tierras."
+    ],
+    [
+      "Ing. Morales",
+      "El reloj de la pared marca 90 segundos; si se acaba, el sistema se restablece solo. Rápido y en orden."
+    ]
+  ],
+  "maniobra_orden": [
+    [
+      "Ing. Morales",
+      "¡Alto, Leo! Ese paso va fuera de orden. El bloqueo te costó 10 segundos."
+    ],
+    [
+      "Ing. Morales",
+      "Potencia, cuchillas, verificar y tierras. En ese orden."
+    ]
+  ],
+  "maniobra_tiempo": [
+    [
+      "Ing. Morales",
+      "Se acabó el tiempo y el sistema se restableció. Empieza otra vez desde el interruptor de potencia."
+    ]
+  ],
+  "descarga": [
+    [
+      "Leo",
+      "¡Tierras puestas! Las luces parpadearon y... se cayeron los cinco."
+    ],
+    [
+      "Ing. Morales",
+      "La carga se fue a tierra. Ya no están electrizados, solo aturdidos."
+    ],
+    [
+      "Ing. Morales",
+      "Ve con cada uno y ayúdalo a levantarse. La puerta de la sala ya se abrió."
+    ]
+  ],
+  "cierre": [
+    [
+      "Ing. Morales",
+      "Leo, en mi pantalla veo a los cinco de pie. Lo lograste."
+    ],
+    [
+      "Leo",
+      "Todos a salvo, Inge. Transformador desenergizado y aterrizado."
+    ],
+    [
+      "Ing. Morales",
+      "Buen trabajo. Sal con ellos al patio; la cuadrilla de apoyo ya va en camino."
+    ]
+  ]
+}

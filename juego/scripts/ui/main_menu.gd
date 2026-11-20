@@ -30,7 +30,7 @@ func _ready() -> void:
 	_first = UIKit.button(vb, "Nueva partida", GameState.new_game)
 	var cont := UIKit.button(vb, "Continuar", func() -> void:
 		if SaveSystem.load_game():
-			GameState.goto(GameState.ZONA_01))
+			GameState.goto(GameState.saved_level()))
 	cont.disabled = not SaveSystem.has_save()
 	UIKit.button(vb, "Opciones", func() -> void:
 		var p := OPTIONS.new()

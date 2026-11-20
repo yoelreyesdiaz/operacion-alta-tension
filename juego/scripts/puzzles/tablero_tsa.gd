@@ -1,15 +1,14 @@
 extends CanvasLayer
-## Tablero TSA-01 v2: medir el fusible, cambiarlo, energizar y, contra reloj,
-## girar los nodos para llevar la energía del banco hasta la salida del PORTÓN.
-## Teclado: WASD/flechas cursor · ESPACIO/E girar · 2 medir · F fusible ·
-## 1 energizar · Q/R herramienta · ESC cerrar. Ratón: clic izq/der gira.
+## Pantalla de nodos del tablero eléctrico. Los pasos físicos (tapa, medir, fusible y palanca)
+## se hacen en el mundo con `TableroFisico`, que abre esta pantalla ya energizada e inyecta su
+## `model`. Aquí, contra reloj, se giran los nodos para llevar la energía del banco a la salida.
+## Lo define un JSON (config_path): TSA-01 (portón) y TD-02, con tierras (puerta del edificio).
+## Teclado: WASD/flechas cursor · ESPACIO/E girar · 1/2 Q/R herramienta · ESC cerrar.
+## Ratón: clic izq/der gira, rueda herramienta.
 
 signal closed
 signal solved
 
-const ID := "tsa01"
-const CELL := 24
-const ORIGIN := Vector2(52, 32)
 const PANEL_X := 284.0
 const C_PVC := Color("d6dce6")
 const C_PVC_DARK := Color("8a94a8")
@@ -17,8 +16,16 @@ const C_RIM := Color("5d6779")
 const C_HOUSING := Color("1c2029")
 const FLOW_SPEED := 9.0  # nodos por segundo que avanza el frente de energía
 const GS := preload("res://autoload/game_state.gd")
+## Tiempo que se ve el mensaje de disparo antes de cerrarse sola.
+const TRIP_CLOSE := 1.5
 
-var model := CircuitoModel.new()
+## Se asignan antes de agregar el tablero a la escena. Sin `model` se carga o genera uno.
+var config_path := "res://data/puzzle_tsa01.json"
+var model: CircuitoModel
+var _cfg: Dictionary
+var _id := ""
+var _cell := 24
+var _origin := Vector2(52, 32)
 var cursor := Vector2i(0, 0)
 var _view: Control
 var _msg := ""
@@ -29,9 +36,6 @@ var _flow := 0.0
 var _t := 0.0
 var _last_second := -1
 var _finishing := false
-var _btn_measure: Button
-var _btn_fuse: Button
-var _btn_start: Button
 var _icons: Texture2D
 var _pcb: Texture2D
 
@@ -40,12 +44,17 @@ func _ready() -> void:
 	layer = 20
 	_icons = load("res://assets/sprites/iconos.png")
 	_pcb = _make_pcb()
-	if GameState.puzzles.has(ID):
-		model.from_dict(GameState.puzzles[ID])
-	else:
-		model.generate(JSON.parse_string(FileAccess.get_file_as_string("res://data/puzzle_tsa01.json")))
+	_cfg = JSON.parse_string(FileAccess.get_file_as_string(config_path))
+	_id = _cfg["id"]
+	_cell = int(_cfg["celda"])
+	_origin = Vector2(_cfg["origen"][0], _cfg["origen"][1])
+	if model == null:
+		model = CircuitoModel.new()
+		if GameState.puzzles.has(_id):
+			model.from_dict(GameState.puzzles[_id])
+		else:
+			model.generate(_cfg)
 	GameState.modal += 1
-	Inventory.changed.connect(_refresh)
 	var first: int = model.nodes()[0]
 	cursor = Vector2i(first % model.n, first / model.n)
 
@@ -55,43 +64,28 @@ func _ready() -> void:
 	_view.gui_input.connect(_on_view_input)
 	add_child(_view)
 
-	_btn_measure = _button("[2] MEDIR FUSIBLE", Vector2(PANEL_X, 140), _measure)
-	_btn_fuse = _button("", Vector2(PANEL_X, 157), _replace_fuse)
-	_btn_start = _button("[1] ENERGIZAR", Vector2(PANEL_X, 174), _start)
-	_button("[ESC] CERRAR", Vector2(PANEL_X, 191), close)
 	_intro_message()
-	_refresh()
-
-
-func _button(text: String, pos: Vector2, action: Callable) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.position = pos
-	b.size = Vector2(136, 15)
-	b.focus_mode = Control.FOCUS_NONE
-	b.pressed.connect(action)
-	_view.add_child(b)
-	return b
 
 
 func _intro_message() -> void:
-	match model.stage():
-		CircuitoModel.Stage.MEDIR:
-			_say("Paso 1: equipa el MULTÍMETRO [Q/R] y mide el fusible principal [2].", GS.C_YELLOW)
-		CircuitoModel.Stage.CAMBIAR:
-			_say("Paso 2: el fusible está abierto. Cámbialo por uno nuevo [F].", GS.C_YELLOW)
-		CircuitoModel.Stage.LISTO:
-			_say("Paso 3: energiza [1]. En cuanto lo hagas, corre el tiempo.", GS.C_YELLOW)
-		CircuitoModel.Stage.RESUELTO:
-			_say("Circuito A en línea. El portón ya tiene energía.", GS.C_GREEN)
+	if model.solved:
+		_say("%s en línea. %s ya tiene energía." % [_cfg["red"], _cfg["meta_frase"].capitalize()], GS.C_GREEN)
+	elif model.running:
+		_energized()
+	else:
+		_say("Sin energía. Energiza con la palanca del tablero.", GS.C_DIM)
 
 
-func _refresh() -> void:
-	var st := model.stage()
-	_btn_fuse.text = "[F] CAMBIAR FUSIBLE"
-	_btn_measure.disabled = st != CircuitoModel.Stage.MEDIR
-	_btn_fuse.disabled = st != CircuitoModel.Stage.CAMBIAR
-	_btn_start.disabled = st != CircuitoModel.Stage.LISTO
+## Efectos al abrir con la red recién energizada por la palanca.
+func _energized() -> void:
+	AudioManager.loop("zumbido", -18.0)
+	_flash = 0.25
+	_flash_color = GS.C_BLUE
+	_last_second = -1
+	if model.faults.is_empty():
+		_say("¡Red energizada! Gira los nodos [ESPACIO] hasta el %s." % _cfg["meta"], GS.C_BLUE)
+	else:
+		_say("¡Red energizada! Llega a la %s sin tocar las TIERRAS." % _cfg["meta"], GS.C_BLUE)
 
 
 func _say(text: String, color := GS.C_TEXT) -> void:
@@ -126,6 +120,8 @@ func _process(delta: float) -> void:
 			_win()
 		"disparo":
 			_trip()
+		"corto":
+			_short()
 	_view.queue_redraw()
 
 
@@ -150,12 +146,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		Inventory.cycle(-1)
 	elif event.is_action_pressed("tool_next"):
 		Inventory.cycle(1)
-	elif event.is_action_pressed("puzzle_measure"):
-		_measure()
-	elif event.is_action_pressed("puzzle_fuse"):
-		_replace_fuse()
-	elif event.is_action_pressed("puzzle_start"):
-		_start()
+	elif event.is_action_pressed("tool_1"):
+		Inventory.equip_slot(0)
+	elif event.is_action_pressed("tool_2"):
+		Inventory.equip_slot(1)
 	else:
 		handled = event.is_action_type()
 	if handled:
@@ -181,7 +175,7 @@ func _move(d: Vector2i) -> void:
 
 
 func _cell_at(pos: Vector2) -> Vector2i:
-	var c := Vector2i(((pos - ORIGIN) / CELL).floor())
+	var c := Vector2i(((pos - _origin) / _cell).floor())
 	if c.x < 0 or c.y < 0 or c.x >= model.n or c.y >= model.n:
 		return Vector2i(-1, -1)
 	return c
@@ -217,46 +211,6 @@ func _rotate(dir: int) -> void:
 				AudioManager.play("error", -10.0)
 
 
-func _measure() -> void:
-	if model.stage() != CircuitoModel.Stage.MEDIR:
-		return
-	if model.measure_fuse(Inventory.equipped == "multimetro") == CircuitoModel.Result.NEED_METER:
-		_say("Para medir necesitas el MULTÍMETRO en la mano [Q/R].", GS.C_YELLOW)
-		AudioManager.play("error", -8.0)
-		return
-	AudioManager.play("click")
-	_say("Multímetro: ∞ Ω. Fusible principal ABIERTO. Cámbialo [F].", GS.C_ORANGE)
-	_refresh()
-	if not GameState.flags.get("fusible_medido", false):
-		GameState.flags["fusible_medido"] = true
-		Radio.play("fusible_abierto")
-
-
-func _replace_fuse() -> void:
-	if model.stage() != CircuitoModel.Stage.CAMBIAR:
-		return
-	if model.replace_fuse(Inventory.has("fusible")) == CircuitoModel.Result.NEED_FUSE:
-		_say("No traes fusibles. Hay en el gabinete de la caseta.", GS.C_YELLOW)
-		AudioManager.play("error", -8.0)
-		return
-	Inventory.remove("fusible")
-	AudioManager.play("fusible")
-	_say("Fusible nuevo colocado: 0.1 Ω. Listo para energizar [1].", GS.C_GREEN)
-	_refresh()
-
-
-func _start() -> void:
-	if model.start() != CircuitoModel.Result.OK:
-		return
-	AudioManager.play("interruptor")
-	AudioManager.loop("zumbido", -18.0)
-	_flash = 0.25
-	_flash_color = GS.C_BLUE
-	_last_second = -1
-	_say("¡Red energizada! Gira los nodos [ESPACIO] hasta el PORTÓN.", GS.C_BLUE)
-	_refresh()
-
-
 func _trip() -> void:
 	GameState.stats["disparos"] += 1
 	AudioManager.play("alarma")
@@ -264,11 +218,21 @@ func _trip() -> void:
 	AudioManager.fade_loop("zumbido", -60.0, 0.3)
 	_flash = 0.4
 	_flash_color = GS.C_RED
-	_say("¡DISPARO! Se acabó el tiempo y el fusible se fundió. Cámbialo [F].", GS.C_RED)
-	_refresh()
-	if not GameState.flags.get("primer_disparo", false):
-		GameState.flags["primer_disparo"] = true
-		Radio.play("disparo")
+	_say("¡DISPARO! Se acabó el tiempo y el fusible se fundió. Cámbialo en el tablero.", GS.C_RED)
+	GameState.puzzles[_id] = model.to_dict()
+	_finishing = true
+	await get_tree().create_timer(TRIP_CLOSE).timeout
+	_finishing = false
+	close()
+
+
+## La energía tocó una TIERRA: cuesta tiempo y no se resuelve hasta alejar esa T.
+func _short() -> void:
+	AudioManager.play("chispa")
+	AudioManager.play("error", -6.0)
+	_flash = 0.3
+	_flash_color = GS.C_RED
+	_say("¡CORTO A TIERRA! -%d s. Gira la T para alejarla de la tierra." % int(model.penalty), GS.C_RED)
 
 
 func _win() -> void:
@@ -279,10 +243,9 @@ func _win() -> void:
 		await get_tree().process_frame
 	_flash = 0.3
 	_flash_color = GS.C_GREEN
-	_say("CIRCUITO A ENERGIZADO. ¡La energía llegó al portón!", GS.C_GREEN)
+	_say("%s ENERGIZADA. ¡La energía llegó a %s!" % [_cfg["red"], _cfg["meta_frase"]], GS.C_GREEN)
 	AudioManager.play("energia")
-	GameState.puzzles[ID] = model.to_dict()
-	_refresh()
+	GameState.puzzles[_id] = model.to_dict()
 	await get_tree().create_timer(1.8).timeout
 	AudioManager.play("exito")
 	await get_tree().create_timer(1.2).timeout
@@ -298,7 +261,7 @@ func close() -> void:
 		AudioManager.play("error", -6.0)
 		return
 	AudioManager.fade_loop("zumbido", -60.0, 0.3)
-	GameState.puzzles[ID] = model.to_dict()
+	GameState.puzzles[_id] = model.to_dict()
 	GameState.modal = max(0, GameState.modal - 1)
 	closed.emit()
 	queue_free()
@@ -338,7 +301,7 @@ func _make_pcb() -> Texture2D:
 
 
 func _cell_center(i: int) -> Vector2:
-	return ORIGIN + Vector2(i % model.n, i / model.n) * CELL + Vector2.ONE * (CELL / 2.0)
+	return _origin + Vector2(i % model.n, i / model.n) * _cell + Vector2.ONE * (_cell / 2.0)
 
 
 ## Círculo relleno pixel a pixel (sin antialias).
@@ -366,17 +329,17 @@ func _draw_view() -> void:
 
 	# Cabecera
 	v.draw_rect(Rect2(6, 5, 150, 9), Color("1d5e99"))
-	v.draw_string(font, Vector2(9, 13), "TSA-01 · RED AUXILIAR", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
-	v.draw_string(font, Vector2(162, 13), "OBJETIVO: PORTÓN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_DIM)
+	v.draw_string(font, Vector2(9, 13), _cfg["titulo"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	v.draw_string(font, Vector2(162, 13), "OBJETIVO: " + _cfg["meta"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_DIM)
 
 	# Tubos de entrada y salida
 	var ec := _cell_center(model.entry_cell)
 	var xc := _cell_center(model.exit_cell)
 	var src := Vector2(26, ec.y)
 	var in_lit := powered and dist[model.entry_cell] >= 0
-	_tube(v, src + Vector2(10, 0), Vector2(ORIGIN.x, ec.y), powered, -1.0)
-	var reached := powered and model.reaches_exit() and _flow >= model.exit_distance() - 0.01
-	_tube(v, Vector2(ORIGIN.x + CELL * model.n, xc.y), Vector2(234, xc.y), reached, 0.0)
+	_tube(v, src + Vector2(10, 0), Vector2(_origin.x, ec.y), powered, -1.0)
+	var reached := powered and model.reaches_exit() and not model.shorted() and _flow >= model.exit_distance() - 0.01
+	_tube(v, Vector2(_origin.x + _cell * model.n, xc.y), Vector2(234, xc.y), reached, 0.0)
 
 	for i in model.n * model.n:
 		var lit := powered and dist[i] >= 0 and dist[i] <= _flow
@@ -386,11 +349,11 @@ func _draw_view() -> void:
 	_draw_lock(v, font, reached)
 
 	# Cursor
-	var cp := ORIGIN + Vector2(cursor) * CELL
-	_brackets(v, Rect2(cp, Vector2.ONE * CELL), GS.C_YELLOW if int(_t * 4) % 2 == 0 else Color.WHITE)
+	var cp := _origin + Vector2(cursor) * _cell
+	_brackets(v, Rect2(cp, Vector2.ONE * _cell), GS.C_YELLOW if int(_t * 4) % 2 == 0 else Color.WHITE)
 
 	_draw_panel(v, font)
-	v.draw_string(font, Vector2(52, 214), "ESPACIO GIRA · WASD CAMBIA NODO", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_LINE)
+	v.draw_string(font, Vector2(52, 214), "ESPACIO GIRA · WASD NODO · 1/2 HERRAMIENTA", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_LINE)
 	v.draw_rect(Rect2(0, 222, 426, 18), Color(GS.C_BG, 0.92))
 	v.draw_rect(Rect2(0, 222, 426, 1), GS.C_LINE)
 	v.draw_string(font, Vector2(8, 234), _msg, HORIZONTAL_ALIGNMENT_LEFT, 410, 12, _msg_color)
@@ -447,7 +410,7 @@ func _draw_lock(v: Control, font: Font, reached: bool) -> void:
 	v.draw_string(font, Vector2(box.position.x + 3, box.position.y + 11), "ABIERTO" if reached else "CERRADO",
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
 	v.draw_string(font, Vector2(box.position.x + 9, box.position.y + 23), _time_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
-	v.draw_string(font, Vector2(box.position.x + 4, box.position.y - 6), "PORTÓN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_TEXT)
+	v.draw_string(font, Vector2(box.position.x + 4, box.position.y - 6), _cfg["meta"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_TEXT)
 
 
 func _time_text() -> String:
@@ -489,19 +452,6 @@ func _draw_panel(v: Control, font: Font) -> void:
 	v.draw_rect(Rect2(x, 51, 136, 14), rc, false, 1.0)
 	v.draw_string(font, Vector2(x + 4, 62), reading, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, rc)
 
-	# Pasos
-	var steps := ["MEDIR FUSIBLE", "CAMBIAR FUSIBLE", "ENERGIZAR", "GIRAR NODOS"]
-	var keys := ["2", "F", "1", "ESP"]
-	var st := int(model.stage())
-	for k in 4:
-		var y := 78 + k * 11
-		var done := st > k
-		var cur := st == k
-		var col := GS.C_GREEN if done else (GS.C_YELLOW if cur else GS.C_LINE)
-		var mark := "✓" if done else (">" if cur and int(_t * 3) % 2 == 0 else " ")
-		v.draw_string(font, Vector2(x, y), "%s %s" % [mark, steps[k]], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
-		v.draw_string(font, Vector2(x + 136 - keys[k].length() * 6, y), keys[k], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
-
 	# Avance
 	var prog := model.progress() if model.running or model.solved else 0.0
 	v.draw_string(font, Vector2(x, 130), "AVANCE %d%%" % int(round(prog * 100.0)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
@@ -509,13 +459,25 @@ func _draw_panel(v: Control, font: Font) -> void:
 	v.draw_rect(Rect2(x + 66, 124, 70, 5), Color("2b303b"))
 	v.draw_rect(Rect2(x + 66, 124, 70 * prog, 5), GS.C_GREEN if model.solved else GS.C_BLUE)
 
+	# Herramienta en la mano (el tablero tapa la barra del chaleco)
+	v.draw_string(font, Vector2(x, 218), "MANO", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_DIM)
+	var held := Inventory.equipped
+	if held == "":
+		v.draw_string(font, Vector2(x + 30, 218), "Sin herramienta", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_DIM)
+	else:
+		var ic: int = Inventory.defs[held]["icono"]
+		v.draw_texture_rect_region(_icons, Rect2(x + 30, 208, 12, 12), Rect2(ic * 12, 0, 12, 12))
+		v.draw_string(font, Vector2(x + 45, 218), Inventory.item_name(held), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, GS.C_YELLOW)
+
 
 ## Nodo: carcasa redonda con una pieza de tubo de PVC (codo, T, recta o tapón)
 ## que gira. Con energía, el tubo se ilumina en azul y corren pulsos.
 func _draw_node(v: Control, i: int, c: Vector2, lit: bool, powered: bool, dist: PackedInt32Array) -> void:
 	var mask := model.masks[i]
-	var half := CELL / 2.0
 	if not model.has_piece(i):  # casilla vacía: sólo el circuito impreso
+		return
+	if model.is_fault(i):
+		_draw_fault(v, c, mask, lit)
 		return
 	if model.fixed[i]:  # tramo de cable fijo, recto o en curva
 		_draw_cable(v, i, c, mask, lit, dist)
@@ -543,9 +505,22 @@ func _draw_node(v: Control, i: int, c: Vector2, lit: bool, powered: bool, dist: 
 	_draw_pipes(v, i, c, mask, lit, dist)
 
 
+## TIERRA: símbolo de tierra rojo con un brazo hacia su nodo; chispea si recibe energía.
+func _draw_fault(v: Control, c: Vector2, mask: int, lit: bool) -> void:
+	var col := Color.WHITE if lit and int(_t * 12) % 2 == 0 else GS.C_RED
+	for d: Array in CircuitoModel.DIRS:
+		if mask & d[0] != 0:
+			v.draw_line(c, c + Vector2(d[1], d[2]) * _cell / 2.0, col, 1.0)
+	if lit:
+		_disc(v, c, 9, Color(GS.C_RED, 0.4))
+	v.draw_rect(Rect2(c.x - 6, c.y - 1, 13, 2), col)
+	v.draw_rect(Rect2(c.x - 4, c.y + 2, 9, 1), col)
+	v.draw_rect(Rect2(c.x - 2, c.y + 4, 5, 1), col)
+
+
 ## Tramo de cable fijo. Las curvas se dibujan como arco de cuarto de círculo.
 func _draw_cable(v: Control, i: int, c: Vector2, mask: int, lit: bool, dist: PackedInt32Array) -> void:
-	var half := CELL / 2.0
+	var half := _cell / 2.0
 	var dirs: Array[Vector2] = []
 	for d: Array in CircuitoModel.DIRS:
 		if mask & d[0] != 0:
@@ -587,7 +562,7 @@ func _draw_cable(v: Control, i: int, c: Vector2, mask: int, lit: bool, dist: Pac
 
 ## Tubos de la pieza (brazos, unión central y bocas tipo PVC) y su energía.
 func _draw_pipes(v: Control, i: int, c: Vector2, mask: int, lit: bool, dist: PackedInt32Array) -> void:
-	var half := CELL / 2.0
+	var half := _cell / 2.0
 	for pass_i in 3:
 		var w: float = [5.0, 3.0, 1.0][pass_i]
 		var col: Color = [GS.C_BG, C_PVC_DARK if not lit else GS.C_BLUE.darkened(0.2), C_PVC if not lit else GS.C_BLUE.lightened(0.55)][pass_i]
@@ -623,7 +598,7 @@ func _draw_pipes(v: Control, i: int, c: Vector2, mask: int, lit: bool, dist: Pac
 ## Pulsos de energía que viajan alejándose del banco, y chispas en las puntas
 ## que no encuentran con quién conectar.
 func _draw_flow(v: Control, i: int, c: Vector2, mask: int, dist: PackedInt32Array) -> void:
-	var half := CELL / 2.0
+	var half := _cell / 2.0
 	for d: Array in CircuitoModel.DIRS:
 		if mask & d[0] == 0:
 			continue

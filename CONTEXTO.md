@@ -14,14 +14,20 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
   caseta (fusibles, bitácora, diagrama) → cable caído que da toques → tablero TSA-01 → portón → fin.
 - **Tablero TSA-01 (puzzle):** medir el fusible con el multímetro → cambiarlo → energizar
   (45 s) → girar 7 nodos con ESPACIO para llevar la energía por el cable hasta el portón.
-- Siguiente: Capítulo 2 (patio de interruptores y generador auxiliar).
+- **Capítulo 2 — La cuadrilla (jugable):** entrada por el portón → cinemática de la descarga →
+  carrera → cinemática del rayo (compañeros electrizados) → huida al edificio con SHIFT.
+  Guion en `data/cinematicas_cap2.json`. Sigue el interior (`scenes/levels/edificio.tscn`): pasillo con
+  la puerta y el tablero TD-02 físico (más difícil, con tierras) → cuarto de seguridad: encender el
+  edificio por zonas con carnadas, puerta blindada y cámaras en vivo → sala de control: maniobra contra
+  reloj (potencia, cuchillas, verificar, tierras) → ayudar a los 5 compañeros → victoria del Capítulo 2.
+  Regla para todo el juego: las acciones se hacen en el mundo con una animación de Leo (`Player.perform`).
 
 ## Estructura del repositorio
 | Carpeta | Contenido |
 |---|---|
 | `juego/` | Proyecto de Godot. Ábrelo con `juego/project.godot`. |
 | `juego/autoload/` | Sistemas globales: GameState, Inventory, PowerGrid, Quest, Radio, SaveSystem, Transition, Narrator, AudioManager. |
-| `juego/scripts/` | Jugador, nivel (zona_01), tablero (puzzles), intro (cinematics), UI. |
+| `juego/scripts/` | Jugador, niveles (zona_01, zona_02), tablero (puzzles), cinemáticas, UI. |
 | `juego/data/` | Textos y datos editables sin tocar código: diálogos, objetos, intro, configuración del tablero. |
 | `juego/assets/` | Sprites, tiles, audio, fuente. Se generan con `juego/tools/*.py`. |
 | `juego/tests/` | Pruebas automáticas. |
@@ -37,6 +43,13 @@ y la subestación (S.E. Atemajac) no representan instalaciones reales.
    cd juego
    godot --headless -s tests/test_circuito_model.gd
    godot --headless res://tests/playthrough.tscn
+   godot --headless res://tests/test_cap2.tscn
+   godot --headless res://tests/test_edificio.tscn
+   godot --headless res://tests/test_inventario.tscn
+   godot --headless -s tests/test_zonas_model.gd
+   godot --headless -s tests/test_mapa_cuartos.gd
+   godot --headless res://tests/test_camaras.tscn
+   godot --headless res://tests/test_final.tscn
    ```
 4. Agrega una entrada en **`BITACORA.md`** con lo que hiciste.
 5. Sube tu rama y abre un **Pull Request** en GitHub para que el equipo lo revise antes de unirlo a `main`.

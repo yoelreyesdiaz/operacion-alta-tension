@@ -14,9 +14,9 @@ func _ready() -> void:
 	UIKit.button(vb, "Inventario", func() -> void: hud.open(INVENTORY.new(), true))
 	UIKit.button(vb, "Objetivos", func() -> void:
 		var p := INFO.new()
-		p.title = "OBJETIVOS — CAPÍTULO 1: LLEGADA"
+		p.title = "OBJETIVOS — CAPÍTULO %d" % Quest.chapter
 		var lines := PackedStringArray()
-		for o: Array in Quest.CAP1:
+		for o: Array in Quest.CAPS[Quest.chapter]:
 			lines.append(("[x] " if Quest.is_done(o[0]) else "[ ] ") + o[1])
 		p.body = "\n".join(lines)
 		p.back = func() -> void: hud.open(load("res://scripts/ui/pause_menu.gd").new())
