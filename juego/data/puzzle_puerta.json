@@ -1,0 +1,19 @@
+{
+  "id": "puerta_edificio",
+  "tamano": 9,
+  "celda": 20,
+  "origen": [52, 22],
+  "semilla": 5519,
+  "entrada": [0, 1],
+  "salida": [8, 7],
+  "tiempo": 60,
+  "camino_minimo": 34,
+  "nodos": 12,
+  "derivaciones": 4,
+  "castigo": 5,
+  "titulo": "TD-02 · EDIFICIO",
+  "meta": "PUERTA",
+  "meta_frase": "la puerta",
+  "red": "RED DEL EDIFICIO",
+  "fusibles_en": "el gabinete del pasillo"
+}

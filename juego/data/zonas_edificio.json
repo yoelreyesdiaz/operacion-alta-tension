@@ -1,0 +1,14 @@
+{
+  "capacidad": 12,
+  "arranque": 25,
+  "zonas": [
+    {"id": "pasillo_norte", "nombre": "Pasillo norte", "carga": 3, "tipo": "obligatoria", "cuarto": "pasillo_norte"},
+    {"id": "sala_control", "nombre": "Sala de control", "carga": 4, "tipo": "obligatoria", "cuarto": "sala_control"},
+    {"id": "servicios", "nombre": "Servicios (ventilación)", "carga": 3, "tipo": "obligatoria", "cuarto": "vestibulo"},
+    {"id": "taller", "nombre": "Taller", "carga": 2, "tipo": "carnada", "cuarto": "taller"},
+    {"id": "bodega", "nombre": "Bodega", "carga": 2, "tipo": "carnada", "cuarto": "bodega"},
+    {"id": "comedor", "nombre": "Comedor", "carga": 1, "tipo": "carnada", "cuarto": "comedor"},
+    {"id": "maquinas", "nombre": "Máquinas", "carga": 3, "tipo": "carnada", "cuarto": "maquinas"},
+    {"id": "puerta_blindada", "nombre": "Puerta blindada", "carga": 3, "tipo": "puerta", "cuarto": "seguridad"}
+  ]
+}

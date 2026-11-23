@@ -62,17 +62,30 @@ func by_category(cat: String) -> Array[String]:
 	return out
 
 
-func tools() -> Array[String]:
+## Todas las herramientas del juego, en el orden de sus bolsillos (teclas 1, 2...).
+func tool_slots() -> Array[String]:
 	var out: Array[String] = []
-	for id: String in items:
+	for id: String in defs:
 		if defs[id]["equipable"]:
 			out.append(id)
 	return out
 
 
+func tools() -> Array[String]:
+	return tool_slots().filter(has)
+
+
 func equip(id: String) -> void:
 	equipped = id
 	equipped_changed.emit(id)
+
+
+## Equipa la herramienta de ese bolsillo (0 = tecla 1); si aún no se tiene, no hace nada.
+func equip_slot(slot: int) -> void:
+	var id: String = tool_slots()[slot]
+	if has(id) and id != equipped:
+		equip(id)
+		AudioManager.play("click")
 
 
 func cycle(dir: int) -> void:
