@@ -156,6 +156,15 @@ func _run() -> void:
 	var m: CircuitoModel = tb.model
 	await shot("tablero_tapa")
 
+	# Claro qué sigue: el fusible se ve, la flecha lo señala y frente al tablero se ofrece medirlo
+	check(tb.fuse_sprite.visible, "el fusible se ve desde que se abre la tapa")
+	check(tb.next_step() == "fusible", "la flecha señala el fusible (%s)" % tb.next_step())
+	for at: String in ["tapa", "palanca", "fusible"]:
+		leo.global_position = tb.spot(at)
+		await wait(0.2)
+		check(leo.focus != null and leo.focus.prompt.contains("fusible"),
+			"parado en %s, el aviso es del fusible (%s)" % [at, leo.focus.prompt if leo.focus else "nada"])
+
 	# Orden: la palanca no energiza y no se mide sin multímetro
 	await use_at(leo, tb.spot("palanca"))
 	await wait(0.8)
@@ -163,7 +172,6 @@ func _run() -> void:
 	await use_at(leo, tb.spot("fusible"))
 	await wait(1.3)
 	check(m.fuse == CircuitoModel.Fuse.DESCONOCIDO, "medir sin multímetro no cuenta")
-	check(not tb.fuse_sprite.visible, "el fusible no se ve hasta medirlo")
 	await press("tool_next")
 	check(Inventory.equipped == "multimetro", "multímetro en la mano")
 	await use_at(leo, tb.spot("fusible"))
@@ -185,6 +193,10 @@ func _run() -> void:
 	await wait_until(func() -> bool: return not leo.performing, 3.0)
 	check(m.fuse == CircuitoModel.Fuse.NUEVO and Inventory.count("fusible") == 2, "fusible cambiado")
 	check(tb.fuse_sprite.texture.resource_path.ends_with("fusible_nuevo.png"), "se ve el fusible nuevo")
+	check(tb.next_step() == "palanca", "ahora la flecha señala la palanca (%s)" % tb.next_step())
+	leo.global_position = tb.spot("fusible")
+	await wait(0.2)
+	check(leo.focus != null and leo.focus.prompt.contains("palanca"), "y el aviso es de la palanca")
 	await use_at(leo, tb.spot("palanca"))
 	check(leo._sprite.animation == "palanca", "animación palanca (%s)" % leo._sprite.animation)
 	await wait_until(func() -> bool: return not leo.performing, 3.0)

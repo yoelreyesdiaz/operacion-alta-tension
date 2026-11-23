@@ -14,6 +14,8 @@ const SCREEN := preload("res://scenes/puzzles/tablero_tsa.tscn")
 ## Dónde se para Leo para usar cada punto, relativo al pie del tablero.
 const SPOTS := {"tapa": Vector2(0, 14), "fusible": Vector2(-7, 14), "palanca": Vector2(9, 14), "info": Vector2(0, 14)}
 const GS := preload("res://autoload/game_state.gd")
+## Dónde apunta la flecha del siguiente paso, relativo al pie del tablero.
+const ARROW := {"tapa": Vector2(0, -30), "fusible": Vector2(-3, -20), "palanca": Vector2(13, -21)}
 
 var config_path := "res://data/puzzle_tsa01.json"
 ## Lado hacia el que mira Leo al usarlo.
@@ -30,6 +32,7 @@ var _id := ""
 var _name := ""
 var _on := false
 var _points := {}
+var _t := 0.0
 
 
 func _ready() -> void:
@@ -57,7 +60,7 @@ func _ready() -> void:
 	lever_sprite = _sprite("palanca_arriba", Vector2(13, -6))
 
 	_points["tapa"] = _point("tapa", "Abrir tapa del " + _name, _use_cover)
-	_points["fusible"] = _point("fusible", "Revisar fusible", _use_fuse)
+	_points["fusible"] = _point("fusible", "Medir fusible", _use_fuse)
 	_points["palanca"] = _point("palanca", "Energizar (palanca)", _use_lever)
 	_points["info"] = _point("info", "Revisar tablero " + _name, _use_info)
 	_refresh()
@@ -72,6 +75,20 @@ func set_on(on: bool) -> void:
 	_on = on
 	if board_sprite:
 		board_sprite.texture = _tex("tsa_on" if on else "tsa_off")
+
+
+## Paso que toca ahora: "tapa", "fusible", "palanca" o "" (pantalla abierta o resuelto).
+func next_step() -> String:
+	if model.solved or screen != null or model.running:
+		return ""
+	if not opened:
+		return "tapa"
+	match model.stage():
+		CircuitoModel.Stage.MEDIR, CircuitoModel.Stage.CAMBIAR:
+			return "fusible"
+		CircuitoModel.Stage.LISTO:
+			return "palanca"
+	return ""
 
 
 ## Lectura del multímetro que se ve sobre el tablero ("" si aún no se mide).
@@ -96,6 +113,7 @@ func _sprite(sprite: String, foot: Vector2) -> Sprite2D:
 	if s.texture:
 		s.offset = Vector2(-s.texture.get_width() / 2.0, -s.texture.get_height())
 	s.position = foot
+	s.show_behind_parent = true  # la flecha y la lectura se dibujan encima
 	add_child(s)
 	return s
 
@@ -109,32 +127,28 @@ func _point(point: String, prompt: String, action: Callable) -> Interactable:
 
 func _enable(point: String, on: bool) -> void:
 	var it: Interactable = _points[point]
+	# Solo `enabled`: si se quitara la capa de colisión, Leo quieto encima no lo volvería a detectar.
 	it.enabled = on
-	it.collision_layer = Interactable.LAYER if on else 0
 	if on and not it.is_in_group("interactable"):
 		it.add_to_group("interactable")
 	elif not on and it.is_in_group("interactable"):
 		it.remove_from_group("interactable")
 
 
-## Ajusta los puntos de uso y el aspecto al estado del modelo.
+## Ajusta los puntos de uso y el aspecto al estado del modelo. Solo se puede usar el paso
+## que toca, para que frente al tablero el aviso siempre diga qué sigue.
 func _refresh() -> void:
-	var done := model.solved
-	_enable("tapa", not opened and not done)
-	_enable("fusible", opened and not done)
-	_enable("palanca", opened and not done)
-	_enable("info", done)
-	match model.fuse:
-		CircuitoModel.Fuse.FUNDIDO:
-			_points["fusible"].prompt = "Cambiar fusible"
-		CircuitoModel.Fuse.NUEVO:
-			_points["fusible"].prompt = "Revisar fusible"
-		_:
-			_points["fusible"].prompt = "Medir fusible"
-	fuse_sprite.visible = model.fuse != CircuitoModel.Fuse.DESCONOCIDO
+	var step := next_step()
+	for point: String in ["tapa", "fusible", "palanca"]:
+		_enable(point, point == step)
+	_enable("info", model.solved)
+	_points["fusible"].prompt = "Cambiar fusible fundido" if model.fuse == CircuitoModel.Fuse.FUNDIDO 		else "Medir fusible (multímetro)"
+	# El fusible se ve desde que se abre la tapa: gris hasta medirlo, rojo fundido, verde nuevo.
+	fuse_sprite.visible = opened or model.solved
 	fuse_sprite.texture = _tex("fusible_nuevo" if model.fuse == CircuitoModel.Fuse.NUEVO else "fusible_fundido")
+	fuse_sprite.modulate = Color(0.55, 0.58, 0.62) if model.fuse == CircuitoModel.Fuse.DESCONOCIDO else Color.WHITE
 	lever_sprite.texture = _tex("palanca_abajo" if model.running or model.solved else "palanca_arriba")
-	if done:
+	if model.solved:
 		set_on(true)
 	queue_redraw()
 
@@ -175,7 +189,7 @@ func _use_fuse(p: Node2D) -> void:
 		CircuitoModel.Stage.MEDIR:
 			if Inventory.equipped != "multimetro":
 				AudioManager.play("error", -8.0)
-				GameState.notify("Para medir el fusible necesitas el multímetro en la mano.")
+				GameState.notify("Equipa el multímetro [1] para medir el fusible del tablero.")
 				tool_missing.emit("multimetro")
 				return
 			await _perform(p, "medir", 1.0)
@@ -209,7 +223,7 @@ func _use_lever(p: Node2D) -> void:
 		return
 	if model.stage() != CircuitoModel.Stage.LISTO:
 		AudioManager.play("error", -8.0)
-		GameState.notify("Antes de energizar, revisa el fusible con el multímetro.")
+		GameState.notify("Antes de energizar, mide el fusible (a la izquierda) con el multímetro [1].")
 		return
 	await _perform(p, "palanca", 0.6)
 	if model.start() != CircuitoModel.Result.OK:
@@ -243,12 +257,23 @@ func _on_screen_closed() -> void:
 		Radio.play("disparo")
 
 
+func _process(delta: float) -> void:
+	_t += delta
+	if next_step() != "":
+		queue_redraw()
+
+
 func _draw() -> void:
+	var step := next_step()
+	if step != "" and fmod(_t, 0.8) < 0.55:  # flecha amarilla sobre la pieza que toca usar
+		var a: Vector2 = ARROW[step] + Vector2(0, -2.0 * absf(sin(_t * 4.0)))
+		draw_colored_polygon(PackedVector2Array([a + Vector2(-5, -6), a + Vector2(5, -6), a + Vector2(0, 1)]), GS.C_BG)
+		draw_colored_polygon(PackedVector2Array([a + Vector2(-4, -5), a + Vector2(4, -5), a + Vector2(0, -1)]), GS.C_YELLOW)
 	var text := reading()
 	if text == "" or model.solved:
 		return
 	var col := GS.C_RED if model.fuse == CircuitoModel.Fuse.FUNDIDO else GS.C_GREEN
 	var font := ThemeDB.fallback_font
-	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
-	draw_rect(Rect2(-w / 2.0 - 2, -40, w + 4, 9), Color(GS.C_BG, 0.8))
-	draw_string(font, Vector2(-w / 2.0, -33), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, col)
+	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
+	draw_rect(Rect2(-w / 2.0 - 2, -45, w + 4, 13), Color(GS.C_BG, 0.8))
+	draw_string(font, Vector2(-w / 2.0, -35), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, col)
