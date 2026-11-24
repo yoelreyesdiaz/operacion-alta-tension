@@ -22,19 +22,19 @@
     {"t": 12.2, "accion": "fin"}
   ],
   "cin2": [
-    {"t": 0.0, "accion": "cam_cuerpos"},
+    {"t": 0.0, "accion": "cam_cielo"},
+    {"t": 0.3, "sfx": "trueno", "vol": -10.0},
     {"t": 0.7, "accion": "rayo"},
-    {"t": 0.72, "sfx": "trueno", "vol": 6.0},
-    {"t": 0.75, "sfx": "chispa", "vol": 4.0},
-    {"t": 0.95, "sfx": "trueno", "vol": 2.0},
-    {"t": 1.1, "accion": "carga"},
-    {"t": 1.1, "loop": "zumbido", "vol": -4.0},
-    {"t": 3.3, "accion": "levantar"},
-    {"t": 3.3, "fade_loop": "zumbido", "vol": -10.0, "tiempo": 1.0},
-    {"t": 4.6, "narra": "Se levantan... pero ya no son ellos.", "hold": 1.2},
-    {"t": 5.2, "accion": "avanzar"},
-    {"t": 7.4, "narra": "¡Al edificio! ¡Corre!", "hold": 1.0},
-    {"t": 8.6, "accion": "cam_jugador"},
-    {"t": 9.8, "accion": "fin"}
+    {"t": 1.7, "accion": "cam_cuerpos"},
+    {"t": 1.75, "accion": "propaga"},
+    {"t": 2.55, "accion": "carga"},
+    {"t": 2.55, "loop": "zumbido", "vol": -4.0},
+    {"t": 4.75, "accion": "levantar"},
+    {"t": 4.75, "fade_loop": "zumbido", "vol": -10.0, "tiempo": 1.0},
+    {"t": 6.05, "narra": "Se levantan... pero ya no son ellos.", "hold": 1.2},
+    {"t": 6.65, "accion": "avanzar"},
+    {"t": 8.85, "narra": "¡Al edificio! ¡Corre!", "hold": 1.0},
+    {"t": 10.05, "accion": "cam_jugador"},
+    {"t": 11.25, "accion": "fin"}
   ]
 }
